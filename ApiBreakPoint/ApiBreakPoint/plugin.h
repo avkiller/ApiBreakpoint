@@ -25,8 +25,20 @@ void pluginStop();
 void pluginSetup();
 
 
-#define MAINWINDOW_WIDTH 1000
+#define MAINWINDOW_WIDTH 800
 #define MAINWINDOW_HEIGHT 600
+#define CHECKBOX_COLUMNS         3
+#define TAB_HEIGHT               35
+#define CHECKBOX_HEIGHT          25
+#define MARGIN_SIZE              10
+
+// È«¾ÖDPI×´Ì¬
+struct DpiState {
+	int current = 96;
+	float scaling = 1.0f;
+	HFONT font = nullptr;
+};
+extern DpiState g_dpi;
 
 const UINT IDC_TABCTRL = __COUNTER__ + 1500;
 
@@ -37,18 +49,19 @@ const UINT IDC_TABCTRL = __COUNTER__ + 1500;
 
 struct ApiBreakPointInfo
 {
-	std::string dllName;
-	std::string apiName;
-	std::string description;
+	std::wstring dllName;
+	std::wstring apiName;
+	std::wstring description;
 	bool bWantToSetBp; // means weather user want bp set or not. true doesn't means bp really set, perhaps int3 erased or dll not loaded yet
 
-	ApiBreakPointInfo(std::string _dllName, std::string _apiName, std::string _description)
-		: dllName(_dllName), apiName(_apiName), description(_description), bWantToSetBp(false) {}
+	ApiBreakPointInfo(std::wstring _dllName, std::wstring _apiName, std::wstring _description)
+		: dllName(_dllName), apiName(_apiName), description(_description), bWantToSetBp(false) {
+	}
 };
 
 struct ApiGroup
 {
-	std::string groupName;
+	std::wstring groupName;
 	std::vector<ApiBreakPointInfo> apiList;
 };
 

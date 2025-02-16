@@ -12,9 +12,11 @@ HINSTANCE g_hInstance;
 
 PLUG_EXPORT bool pluginit(PLUG_INITSTRUCT* initStruct)
 {
+    _plugin_logprintf("Plugin name %s \n", PLUGIN_NAME);
     initStruct->pluginVersion = PLUGIN_VERSION;
     initStruct->sdkVersion = PLUG_SDKVERSION;
-    strncpy_s(initStruct->pluginName, PLUGIN_NAME, _TRUNCATE);
+    //wcsncpy_s(initStruct->pluginName, PLUGIN_NAME_MAX_LEN, PLUGIN_NAME, _TRUNCATE);
+    strncpy_s(initStruct->pluginName, PLUGIN_NAME_MAX_LEN, PLUGIN_NAME, _TRUNCATE);
     pluginHandle = initStruct->pluginHandle;
     return pluginInit(initStruct);
 }

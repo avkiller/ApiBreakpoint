@@ -1,11 +1,10 @@
 #pragma once
 
 // Plugin information
-#define PLUGIN_NAME "ApiBreakpoint"
-#ifndef PLUGIN_NAME
-#error You need to define PLUGIN_NAME
-#endif // PLUGIN_NAME
-#define PLUGIN_VERSION 1
+constexpr auto ClASS_NAME = L"ApiBreakpoint";
+constexpr auto PLUGIN_NAME = "ApiBreakpoint";
+constexpr auto PLUGIN_VERSION = 1;
+constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
 #include "pluginsdk/bridgemain.h"
 #include "pluginsdk/_plugins.h"
