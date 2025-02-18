@@ -986,8 +986,7 @@ bool pluginInit(PLUG_INITSTRUCT* initStruct)
 
 //Deinitialize your plugin data here.
 void pluginStop()
-{
-}
+{}
 
 //Do GUI/Menu related things here.
 void pluginSetup()
@@ -1191,39 +1190,60 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 	case WM_COMMAND:
-		for (int i = 0; i < CHECK_COUNT; i++)
+		for (int i = 0; i < CHECK_COUNT; i++) 
 		{
-			if (LOWORD(wParam) == IDC_CHECKS[i])
+			if (LOWORD(wParam) == IDC_CHECKS[i]) 
 			{
-				if (IsDlgButtonChecked(hwnd, IDC_CHECKS[i]))
-				{
-					// checked, means user want to set bp here, then we'll try to use bp instruction set one.
-					Groups[CurTab].apiList[i].bWantToSetBp = true;
-					std::wstring wcmd = L"bp " + Groups[CurTab].apiList[i].apiName;
-					std::string cmd = WideToUTF8(wcmd); // 封装编码转换
-					Cmd(cmd.c_str());
+				bool bNewState = IsDlgButtonChecked(hwnd, IDC_CHECKS[i]) == BST_CHECKED;
+				auto& apiInfo = Groups[CurTab].apiList[i];  // 简化引用
+
+				// 状态未变化且已经执行成功，跳过
+				if (apiInfo.bWantToSetBp == bNewState && apiInfo.bCmdSuccess) {
+					//_plugin_logprintf("BP break\n");
+					break;
 				}
-				else
-				{
-					Groups[CurTab].apiList[i].bWantToSetBp = false;
-					std::wstring wcmd = L"bc " + Groups[CurTab].apiList[i].apiName;
-					std::string cmd = WideToUTF8(wcmd); // 封装编码转换
-					Cmd(cmd.c_str());
+
+				// 构造命令
+				//_plugin_logprintf("BP cmd start\n");
+				std::wstring wcmd = bNewState ? L"bp " + apiInfo.apiName
+					: L"bc " + apiInfo.apiName;
+
+				// 转换为 UTF-8
+				std::string cmd = WideToUTF8(wcmd);
+
+				// 执行命令并记录结果
+				bool bSuccess = DbgCmdExecDirect(cmd.c_str());
+
+				
+
+				// 更新状态
+				apiInfo.bCmdSuccess = bSuccess;
+				apiInfo.bWantToSetBp = bNewState;
+				apiInfo.bBpSet = bSuccess ? bNewState : apiInfo.bBpSet;  // 仅成功时更新实际状态
+
+				// 错误处理
+				if (!bSuccess) {
+					_plugin_logprintf("Failed to %s breakpoint %s\n", bNewState ? "set" : "clear", cmd.c_str());
+				}
+				else {
+					_plugin_logprintf("Successfully %s breakpoint %s\n", bNewState ? "set" : "cleared", cmd.c_str());
 				}
 			}
 		}
 		break;
+
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		EndPaint(hwnd, &ps);
 		return 0;
+
 	case WM_SIZE:
 		AdjustLayout(hwnd);
 		return 0;
 
 	case WM_DESTROY:
 		if (g_dpi.font) DeleteObject(g_dpi.font);
-		CleanupBreakpoints();
+		//CleanupBreakpoints();
 		PostQuitMessage(0);
 		return 0;
 	case WM_DPICHANGED:
@@ -1332,20 +1352,22 @@ EXTERN_C __declspec(dllexport) void _cdecl CBLOADDLL(
 )
 {
 	// check if there are any breakpoint can be set
-	for (size_t i = 0; i < TAB_COUNT; i++)
-	{
-		for (size_t j = 0; j < Groups[i].apiList.size(); j++)
-		{
-			if (Groups[i].apiList[j].bWantToSetBp)
-			{
-				std::wstring wcmd = L"bp " + Groups[i].apiList[j].apiName;
-				int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, NULL, 0, NULL, NULL);
-				std::string cmd(sizeNeeded, 0);
-				WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, &cmd[0], sizeNeeded, NULL, NULL);
-				Cmd(cmd.c_str());
-			}
-		}
-	}
+	//for (size_t i = 0; i < TAB_COUNT; i++)
+	//{
+	//	for (size_t j = 0; j < Groups[i].apiList.size(); j++)
+	//	{
+	//		auto& apiInfo = Groups[CurTab].apiList[i];  // 简化引用
+
+	//		if (apiInfo.bBpSet && apiInfo.bCmdSuccess) {
+	//			_plugin_logprintf("BP Already Set\n");
+	//			break;
+	//		}
+
+	//		std::wstring wcmd = L"bp " + apiInfo.apiName;
+	//	    std::string cmd = WideToUTF8(wcmd);
+	//	    bool bSuccess = DbgCmdExecDirect(cmd.c_str());
+	//	}
+	//}
 }
 
 // register menu to popup main window
