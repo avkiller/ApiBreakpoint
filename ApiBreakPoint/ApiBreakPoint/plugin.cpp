@@ -1,6 +1,9 @@
 #include "plugin.h"
 #include <ShellScalingApi.h>
 
+#include "pluginsdk\_plugins.h"
+#include "pluginsdk\bridgemain.h"
+
 //#ifdef _UNICODE
 //#error "USE ASCII CODE PAGE"
 //#endif
@@ -959,6 +962,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 void UpdateCheckBoxs();
 void RecreateFont();
+void CleanupBreakpoints();
 void AdjustLayout(HWND);
 
 DpiState g_dpi = {
@@ -966,6 +970,7 @@ DpiState g_dpi = {
 	.scaling = 1.0f,  // 初始缩放因子
 	.font = nullptr   // 初始字体句柄
 };
+
 
 //Initialize your plugin data here.
 bool pluginInit(PLUG_INITSTRUCT* initStruct)
@@ -989,6 +994,17 @@ void pluginSetup()
 {
 	_plugin_menuaddentry(hMenu, MENU_MAINWINDOW_POPUP, "Set Api Breakpoint");
 }
+
+
+// 封装宽字符转 UTF-8
+std::string WideToUTF8(const std::wstring& wstr)
+{
+	int size = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	std::string str(size, 0);
+	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size, nullptr, nullptr);
+	return str;
+}
+
 
 // doing msg loop like WinMain
 DWORD WINAPI MsgLoopThread(LPVOID)
@@ -1018,12 +1034,18 @@ DWORD WINAPI MsgLoopThread(LPVOID)
 	g_dpi.current = GetDeviceCaps(hdc, LOGPIXELSX);
 	ReleaseDC(nullptr, hdc);
 	g_dpi.scaling = g_dpi.current / 96.0f;
-	hwnd = CreateWindowW(ClASS_NAME, L"API断点管理器",
+	hwnd = CreateWindowW(
+		ClASS_NAME, 
+		L"API断点管理器",
 		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		MulDiv(MAINWINDOW_WIDTH, g_dpi.current, 96),
 		MulDiv(MAINWINDOW_HEIGHT, g_dpi.current, 96),
-		nullptr, nullptr, g_hInstance, nullptr);
+		nullptr,
+		nullptr, 
+		g_hInstance, 
+		//GetModuleHandle(nullptr),
+		nullptr);
 
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
@@ -1116,9 +1138,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 		InitCommonControls();
 
-		hTabControl = CreateWindowW(L"SysTabControl32", L"",
+		hTabControl = CreateWindowW(
+			L"SysTabControl32",
+			L"",
 			WS_CHILD | WS_VISIBLE | TCS_FIXEDWIDTH,
-			0, 0, 0, 0, hwnd, (HMENU)IDC_TABCTRL, g_hInstance, nullptr);
+			0,
+			0, 
+			0,
+			0, 
+			hwnd, 
+			//(HMENU)IDC_TABCTRL,
+			reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_TABCTRL)),
+			g_hInstance, nullptr);
 
 		for (int i = 0; i < TAB_COUNT; i++)
 		{
@@ -1126,23 +1157,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			ti.pszText = (LPWSTR)Groups[i].groupName.c_str();
 			TabCtrl_InsertItem(hTabControl, i, &ti);
 		}
-
-	/*	for (int i = 0; i < CHECK_COUNT; i++)
-		{
-			
-			hChecks[i] = CreateWindowExW(WS_EX_WINDOWEDGE, L"Button", L"CreateThread(some descrition here)",
-				WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | WS_GROUP,
-				5 + (i / 25) * (MAINWINDOW_WIDTH/3), 30 + 20 * (i % 25) + 5, (MAINWINDOW_WIDTH / 3), 20, 
-				hwnd, (HMENU)IDC_CHECKS[i], g_hInstance, NULL);
-			SendMessageW(hChecks[i], WM_SETFONT, (WPARAM)defaultFont, TRUE);
-		}*/
-
 		// 创建复选框
 		for (int i = 0; i < CHECK_COUNT; i++) {
-			hChecks[i] = CreateWindowW(L"BUTTON", L"",
+			hChecks[i] = CreateWindowW(
+				L"BUTTON",
+				L"",
 				WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_MULTILINE,
 				0, 0, 0, 0,
-				hwnd, (HMENU)IDC_CHECKS[i], g_hInstance, nullptr);
+				hwnd,
+				//(HMENU)IDC_CHECKS[i], 
+				reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CHECKS[i])),
+				g_hInstance, nullptr);
 			SendMessageW(hChecks[i], WM_SETFONT, (WPARAM)g_dpi.font, TRUE);
 		}
 
@@ -1175,18 +1200,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					// checked, means user want to set bp here, then we'll try to use bp instruction set one.
 					Groups[CurTab].apiList[i].bWantToSetBp = true;
 					std::wstring wcmd = L"bp " + Groups[CurTab].apiList[i].apiName;
-					int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, NULL, 0, NULL, NULL);
-					std::string cmd(sizeNeeded, 0);
-					WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, &cmd[0], sizeNeeded, NULL, NULL);
+					std::string cmd = WideToUTF8(wcmd); // 封装编码转换
 					Cmd(cmd.c_str());
 				}
 				else
 				{
 					Groups[CurTab].apiList[i].bWantToSetBp = false;
 					std::wstring wcmd = L"bc " + Groups[CurTab].apiList[i].apiName;
-					int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, NULL, 0, NULL, NULL);
-					std::string cmd(sizeNeeded, 0);
-					WideCharToMultiByte(CP_UTF8, 0, wcmd.c_str(), -1, &cmd[0], sizeNeeded, NULL, NULL);
+					std::string cmd = WideToUTF8(wcmd); // 封装编码转换
 					Cmd(cmd.c_str());
 				}
 			}
@@ -1202,6 +1223,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 		if (g_dpi.font) DeleteObject(g_dpi.font);
+		CleanupBreakpoints();
 		PostQuitMessage(0);
 		return 0;
 	case WM_DPICHANGED:
@@ -1259,6 +1281,26 @@ void AdjustLayout(HWND hwnd) {
 	}
 }
 
+// 在程序退出或崩溃前的清理函数中
+void CleanupBreakpoints()
+{
+	_plugin_logprintf("[+] Cleaning up breakpoints...\n");
+
+	for (auto& group : Groups)
+	{
+		for (auto& api : group.apiList)
+		{
+			if (api.bWantToSetBp)
+			{
+				std::string cmd = "bc " + WideToUTF8(api.apiName);
+				Cmd(cmd.c_str());
+				api.bWantToSetBp = false;
+			}
+				
+		}
+	}
+}
+
 // 字体管理
 void RecreateFont() {
 	if (g_dpi.font) DeleteObject(g_dpi.font);
@@ -1279,6 +1321,9 @@ void RecreateFont() {
 		return TRUE;
 		}, 0);
 }
+
+
+
 
 // set delay breakpoint when dll loaded
 EXTERN_C __declspec(dllexport) void _cdecl CBLOADDLL(
@@ -1311,10 +1356,27 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENT
 	case MENU_MAINWINDOW_POPUP:
 		if (!bIsMainWindowShow && DbgIsDebugging())
 		{
-			CloseHandle(CreateThread(0, 0, MsgLoopThread, 0, 0, 0));
-			bIsMainWindowShow = true;
-		}
+			HANDLE hThread = CreateThread(
+				NULL,                   // 安全属性
+				0,                      // 默认堆栈大小
+				MsgLoopThread,          // 线程函数
+				NULL,                   // 参数
+				0,                      // 创建标志
+				NULL                    // 线程ID
+			);
 
+			if (hThread != NULL)
+			{
+				// 线程创建成功，可以关闭句柄（如果不需后续操作）
+				CloseHandle(hThread);
+				bIsMainWindowShow = true;
+			}
+			else
+			{
+				// 处理线程创建失败的情况
+				_plugin_logprintf("Failed to create thread %s \n", MB_ICONERROR);
+			}
+		}
 		break;
 	}
 }
