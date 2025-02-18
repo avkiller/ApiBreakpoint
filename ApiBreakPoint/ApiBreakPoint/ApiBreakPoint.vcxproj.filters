@@ -29,5 +29,8 @@
     <ClCompile Include="pluginmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ApiGroups.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

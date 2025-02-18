@@ -4,7 +4,7 @@
 constexpr auto ClASS_NAME = L"ApiBreakpoint";
 constexpr auto PLUGIN_NAME = "ApiBreakpoint";
 constexpr auto API_BREAKPOINT_VERSION_MAJOR = 1;
-constexpr auto API_BREAKPOINT_VERSION_MINOR = 2;
+constexpr auto API_BREAKPOINT_VERSION_MINOR = 4;
 constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
 #include "pluginsdk/bridgemain.h"
@@ -51,7 +51,8 @@ constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 #pragma comment(lib, "pluginsdk/XEDParse/XEDParse_x86.lib")
 #endif //_WIN64
 
-#define Cmd(x) DbgCmdExecDirect(x)
+//#define Cmd(x) DbgCmdExecDirect(x)
+#define Cmd(x) DbgCmdExecDirect((x))
 #define Eval(x) DbgValFromString(x)
 #define dprintf(x, ...) _plugin_logprintf("[" PLUGIN_NAME "] " x, __VA_ARGS__)
 #define dputs(x) _plugin_logprintf("[" PLUGIN_NAME "] %s\n", x)

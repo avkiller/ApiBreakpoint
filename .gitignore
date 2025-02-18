@@ -2,12 +2,11 @@
 # 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
 ################################################################################
 
-/ApiBreakPoint/ApiBreakPoint/Release/ApiBreakPoint.tlog
-/ApiBreakPoint/ApiBreakPoint/Release
-/ApiBreakPoint/.vs/ApiBreakPoint
-/ApiBreakPoint/output/ApiBreakPoint.lib
-/ApiBreakPoint/output/ApiBreakPoint.exp
-/ApiBreakPoint/ApiBreakPoint/x64/Release
-/ApiBreakPoint/output/ApiBreakPoint.pdb
-/ApiBreakPoint/output/ApiBreakPoint_DPI1.2.zip
+/ApiBreakPoint/ApiBreakPoint/Release/
 /ApiBreakPoint/ApiBreakPoint/Debug
+/ApiBreakPoint/.vs
+*.lib
+*.exp
+/ApiBreakPoint/ApiBreakPoint/x64/Release/
+*.pdb
+/ApiBreakPoint/output/*.zip
