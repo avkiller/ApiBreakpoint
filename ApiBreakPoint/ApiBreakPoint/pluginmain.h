@@ -4,7 +4,7 @@
 constexpr auto ClASS_NAME = L"ApiBreakpoint";
 constexpr auto PLUGIN_NAME = "ApiBreakpoint";
 constexpr auto API_BREAKPOINT_VERSION_MAJOR = 1;
-constexpr auto API_BREAKPOINT_VERSION_MINOR = 4;
+constexpr auto API_BREAKPOINT_VERSION_MINOR = 5;
 constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
 #include "pluginsdk/bridgemain.h"

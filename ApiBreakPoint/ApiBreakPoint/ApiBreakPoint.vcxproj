@@ -31,14 +31,14 @@
     <ProjectGuid>{DE841F72-AF8F-48B7-896F-8B8B745C91EA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ApiBreakPoint</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -58,7 +58,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -150,10 +150,15 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Shcore.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
     </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -171,10 +176,15 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "$(TargetPath)")</Command>
     </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "$(TargetPath)")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -188,6 +198,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -195,14 +206,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shcore.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='build|Win32'">
     <ClCompile>
@@ -216,6 +231,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -223,14 +239,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -254,11 +274,15 @@
       <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "$(TargetPath)")</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "$(TargetPath)")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='build|x64'">
     <ClCompile>
@@ -282,13 +306,18 @@
       <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)output\copy.bat</Command>
+      <Command>call $(SolutionDir)output\copy.bat
+if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevServer.exe" reload "$(TargetPath)")</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
+    <PreLinkEvent>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevServer.exe" unload "$(TargetPath)")</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ApiGroup.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginmain.h" />
   </ItemGroup>

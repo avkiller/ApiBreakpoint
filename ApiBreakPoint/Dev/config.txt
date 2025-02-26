@@ -1,0 +1,2 @@
+if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevServer.exe" unload "$(TargetPath)")
+if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevServer.exe" reload "$(TargetPath)")

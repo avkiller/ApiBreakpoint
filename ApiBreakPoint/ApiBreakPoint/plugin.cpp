@@ -1,4 +1,6 @@
 #include "plugin.h"
+#include "ApiGroup.h"
+#include <windows.h>
 #include <ShellScalingApi.h>
 
 #include "pluginsdk\_plugins.h"
@@ -20,13 +22,16 @@ bool bIsMainWindowShow = false;
 HWND hTabControl;
 HWND hMain;
 int CurTab = 0;
+std::vector<std::vector<HWND>> g_tabChecks;
 
-// checkbox handle
-HWND hChecks[CHECK_COUNT];
-
+std::unordered_map<HWND, std::pair<size_t, size_t>> g_checkboxMap;
 
 DWORD WINAPI MsgLoopThread(LPVOID);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+
+void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointInfo& apiInfo);
+
+void CreateTabs(TCITEMW& ti, HWND& hwnd);
 
 void UpdateCheckBoxs();
 void RecreateFont();
@@ -44,12 +49,9 @@ DpiState g_dpi = {
 //Initialize your plugin data here.
 bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
-	HRESULT hr = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+	HRESULT hr = SetProcessDpiAwareness(PROCESS_DPI_AWARENESS::PROCESS_PER_MONITOR_DPI_AWARE);
 	if (FAILED(hr))
-		std::cerr << "SetProcessDpiAwareness failed with error: " << hr << std::endl;
-	{
-		SetProcessDPIAware();
-	}
+		_plugin_logprintf("SetProcessDpiAwareness failed with error\n");
 	return true; //Return false to cancel loading the plugin.
 }
 
@@ -73,6 +75,30 @@ std::string WideToUTF8(const std::wstring& wstr)
 	return str;
 }
 
+// 兼容旧系统的GetCurrentDPI实现
+UINT GetCurrentDPI() {
+	// 尝试加载 GetDpiForSystem（Windows 10 及以上）
+	static auto pGetDpiForSystem = [] {
+		HMODULE hUser32 = LoadLibraryW(L"user32.dll");
+		return hUser32 ? (UINT(WINAPI*)())GetProcAddress(hUser32, "GetDpiForSystem") : nullptr;
+		}();
+
+	if (pGetDpiForSystem) {
+		return pGetDpiForSystem();
+	}
+	else {
+		// 否则，使用 GetDeviceCaps 获取屏幕 DPI
+		HDC hdc = GetDC(nullptr);
+		if (hdc) {
+			UINT dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+			ReleaseDC(nullptr, hdc);
+			return dpi;
+		}
+	}
+
+	// 默认 DPI
+	return 96;
+}
 
 // doing msg loop like WinMain
 DWORD WINAPI MsgLoopThread(LPVOID)
@@ -97,11 +123,9 @@ DWORD WINAPI MsgLoopThread(LPVOID)
 
 	// 获取当前DPI并进行缩放
 	// 获取初始DPI
-	
-	HDC hdc = GetDC(nullptr);
-	g_dpi.current = GetDeviceCaps(hdc, LOGPIXELSX);
-	ReleaseDC(nullptr, hdc);
+	g_dpi.current = GetCurrentDPI();
 	g_dpi.scaling = g_dpi.current / 96.0f;
+
 	hwnd = CreateWindowW(
 		ClASS_NAME, 
 		L"API断点管理器",
@@ -112,8 +136,11 @@ DWORD WINAPI MsgLoopThread(LPVOID)
 		nullptr,
 		nullptr, 
 		g_hInstance, 
-		//GetModuleHandle(nullptr),
 		nullptr);
+
+	if (!hwnd) {
+		return 0; // 窗口创建失败
+	}
 
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
@@ -164,20 +191,21 @@ VOID CenterDialog(HWND hDlg)
 // called when tab changed, update checkbox check(uncheck) and show(hide) state
 void UpdateCheckBoxs()
 {
-	CurTab = TabCtrl_GetCurSel(hTabControl);
-	size_t len = g_Api_Groups[CurTab].apiList.size();
-	for (size_t i = 0; i < CHECK_COUNT; i++)
+	/*CurTab = TabCtrl_GetCurSel(hTabControl);
+	size_t apiList_len = g_Api_Groups[CurTab].apiList.size();
+	for (size_t i = 0; i < apiList_len; i++)
 	{
-		if (i < len)
+		if (i < apiList_len)
 		{
-			SetWindowTextW(hChecks[i], std::wstring(g_Api_Groups[CurTab].apiList[i].apiName + L"  " + g_Api_Groups[CurTab].apiList[i].description).c_str());
+	CurTab = TabCtrl_GetCurSel(hTabControl);
+			SetWindowTextW(g_tabChecks[CurTab][i], std::wstring(g_Api_Groups[CurTab].apiList[i].apiName + L"  " + g_Api_Groups[CurTab].apiList[i].description).c_str());
 			if (g_Api_Groups[CurTab].apiList[i].bWantToSetBp)
 			{
-				CheckDlgButton(hMain, IDC_CHECKS[i], BST_CHECKED);
+				CheckDlgButton(hMain, g_tabChecks[CurTab][i], BST_CHECKED);
 			}
 			else
 			{
-				CheckDlgButton(hMain, IDC_CHECKS[i], BST_UNCHECKED);
+				CheckDlgButton(hMain, g_tabChecks[CurTab][i], BST_UNCHECKED);
 			}
 			ShowWindow(hChecks[i], SW_SHOW);
 		}
@@ -185,6 +213,15 @@ void UpdateCheckBoxs()
 		{
 			ShowWindow(hChecks[i], SW_HIDE);
 		}
+	}*/
+
+	CurTab = TabCtrl_GetCurSel(hTabControl);
+	for (size_t chkIdx = 0; chkIdx < g_tabChecks[CurTab].size(); chkIdx++) {
+		auto& apiInfo = g_Api_Groups[CurTab].apiList[chkIdx];
+		SetWindowTextW(g_tabChecks[CurTab][chkIdx], std::wstring(apiInfo.apiName + L"  " + apiInfo.description).c_str());
+		bool desiredState = apiInfo.bBpSet;
+		SendMessage(g_tabChecks[CurTab][chkIdx], BM_SETCHECK, desiredState ? BST_CHECKED : BST_UNCHECKED, 0);
+		InvalidateRect(g_tabChecks[CurTab][chkIdx], NULL, TRUE);
 	}
 }
 
@@ -202,10 +239,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 		RecreateFont();
-		//defaultFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-
 		InitCommonControls();
-
 		hTabControl = CreateWindowW(
 			L"SysTabControl32",
 			L"",
@@ -221,31 +255,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 		//// 设置选项卡的默认字体,目前和控件一致
 		SendMessage(hTabControl, WM_SETFONT, (WPARAM)g_dpi.tabfont, TRUE);
-
-
-		for (int i = 0; i < TAB_COUNT; i++)
-		{
-			ti.mask = TCIF_TEXT;
-			ti.pszText = (LPWSTR)g_Api_Groups[i].groupName.c_str();
-			TabCtrl_InsertItem(hTabControl, i, &ti);
-		}
-		// 创建复选框
-		for (int i = 0; i < CHECK_COUNT; i++) {
-			hChecks[i] = CreateWindowW(
-				L"BUTTON",
-				L"",
-				WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_MULTILINE,
-				0, 0, 0, 0,
-				hwnd,
-				//(HMENU)IDC_CHECKS[i], 
-				reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CHECKS[i])),
-				g_hInstance, nullptr);
-			SendMessageW(hChecks[i], WM_SETFONT, (WPARAM)g_dpi.font, TRUE);
-		}
-
+		CreateTabs(ti, hwnd);
 		CenterDialog(hwnd);
 		AdjustLayout(hwnd);
-		UpdateCheckBoxs();
+		//UpdateCheckBoxs();
 	}
 	return 0;
 	case WM_NOTIFY:
@@ -253,69 +266,127 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		switch (((LPNMHDR)lParam)->code)
 		{
 
-		case TCN_SELCHANGE:
-		{
-			UpdateCheckBoxs();
-
-			return TRUE;
-		}
+			case TCN_SELCHANGE:
+			{
+				
+				int newTab = TabCtrl_GetCurSel(hTabControl);
+				// 修改：切换时隐藏非当前标签页的复选框
+				for (size_t tabIdx = 0; tabIdx < g_tabChecks.size(); tabIdx++) {
+					bool show = (tabIdx == newTab);
+					for (HWND hCheck : g_tabChecks[tabIdx]) {
+						ShowWindow(hCheck, show ? SW_SHOW : SW_HIDE);
+					}
+				}
+				AdjustLayout(hwnd);
+				//UpdateCheckBoxs();
+				return TRUE;
+			}
 		}
 	}
 	return 0;
 	case WM_COMMAND:
-		for (int i = 0; i < CHECK_COUNT; i++) 
-		{
-			if (LOWORD(wParam) == IDC_CHECKS[i]) 
+	{
+		if (HIWORD(wParam) == BN_CLICKED) {
+			UINT ctrlID = LOWORD(wParam);
+			HWND hCheck = (HWND)lParam; // 获取控件句柄
+			// 新增：通过映射表快速查找
+			auto it = g_checkboxMap.find(hCheck);
+			if (it != g_checkboxMap.end())
 			{
-				bool bNewState = IsDlgButtonChecked(hwnd, IDC_CHECKS[i]) == BST_CHECKED;
-				auto& apiInfo = g_Api_Groups[CurTab].apiList[i];  // 简化引用
+				size_t tabIdx = it->second.first;
+				size_t chkIdx = it->second.second;
 
-				// 状态未变化且已经执行成功，跳过
-				if (apiInfo.bWantToSetBp == bNewState && apiInfo.bCmdSuccess) {
-					//_plugin_logprintf("BP break\n");
-					break;
+				auto& apiInfo = g_Api_Groups[tabIdx].apiList[chkIdx];
+				bool isChecked = !apiInfo.bWantToSetBp;
+
+				UINT newState = (isChecked) ? BST_CHECKED : BST_UNCHECKED;
+
+				// 执行业务逻辑
+				if (isChecked) {
+
+					std::wstring wcmd = L"bp " + g_Api_Groups[tabIdx].apiList[chkIdx].apiName;
+					std::string cmd = WideToUTF8(wcmd);
+					bool bSuccess = DbgCmdExecDirect(cmd.c_str());
+
+					apiInfo.bCmdSuccess = bSuccess;
+					apiInfo.bWantToSetBp = isChecked;
+					apiInfo.bBpSet = bSuccess ? isChecked : apiInfo.bBpSet;
+
+				} else {
+                    // 清理已经设置成功的断点
+					if (apiInfo.bBpSet) {
+						std::wstring wcmd = L"bc " + g_Api_Groups[tabIdx].apiList[chkIdx].apiName;
+						std::string cmd = WideToUTF8(wcmd);
+						bool bSuccess = DbgCmdExecDirect(cmd.c_str());
+						apiInfo.bCmdSuccess = bSuccess;
+						apiInfo.bWantToSetBp = isChecked;
+						apiInfo.bBpSet = bSuccess ? isChecked : apiInfo.bBpSet;
+					}
+
 				}
-
-				// 构造命令
-				//_plugin_logprintf("BP cmd start\n");
-				std::wstring wcmd = bNewState ? L"bp " + apiInfo.apiName
-					: L"bc " + apiInfo.apiName;
-
-				// 转换为 UTF-8
-				std::string cmd = WideToUTF8(wcmd);
-
-				// 执行命令并记录结果
-				bool bSuccess = DbgCmdExecDirect(cmd.c_str());
-
-				
 
 				// 更新状态
-				apiInfo.bCmdSuccess = bSuccess;
-				apiInfo.bWantToSetBp = bNewState;
-				apiInfo.bBpSet = bSuccess ? bNewState : apiInfo.bBpSet;  // 仅成功时更新实际状态
+				RedrawWindow(hCheck, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
-				// 错误处理
-				if (!bSuccess) {
-					_plugin_logprintf("Failed to %s breakpoint %s\n", bNewState ? "set" : "clear", cmd.c_str());
-				}
-				else {
-					_plugin_logprintf("Successfully %s breakpoint %s\n", bNewState ? "set" : "cleared", cmd.c_str());
-				}
+				/*_plugin_logprintf("WM_COMMAND: Checkboxes ID %d, tabIdx%d, chkIdx%d, isChecked, %s, bBpSet,%s\n",
+					ctrlID,
+					tabIdx,
+					chkIdx,
+					isChecked ? "check" : "uncheck",
+					apiInfo.bBpSet ? "success" : "failed");*/
 			}
-		}
-		break;
 
+			
+			return 0;
+		}
+	
+		
+		
+		
+	
+	}
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		EndPaint(hwnd, &ps);
 		return 0;
 
-	case WM_SIZE:
-		AdjustLayout(hwnd);
-		return 0;
+	case WM_DRAWITEM:
+	{
+		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
+		HWND hButton = pDrawItem->hwndItem;
+		// 检查是否是复选框
+		if (pDrawItem->CtlType != ODT_BUTTON)
+			return DefWindowProc(hwnd, iMsg, wParam, lParam);
 
+		// 修改：通过映射表直接获取数据
+		auto it = g_checkboxMap.find(hButton);
+		if (it == g_checkboxMap.end())
+			return DefWindowProc(hwnd, iMsg, wParam, lParam);
+
+		size_t tabIdx = it->second.first;
+		size_t chkIdx = it->second.second;
+		const auto& apiInfo = g_Api_Groups[tabIdx].apiList[chkIdx];
+
+		DrawCheckbox(hButton, pDrawItem, apiInfo);
+
+		return DefWindowProc(hwnd, iMsg, wParam, lParam);
+	}
+       
+	case WM_SIZE: {
+	
+		AdjustLayout(hwnd);
+		break;
+		return 0;
+	}
 	case WM_DESTROY:
+		g_checkboxMap.clear();
 		if (g_dpi.font) DeleteObject(g_dpi.font);
+		if (g_dpi.tabfont) DeleteObject(g_dpi.tabfont);
+		for (auto& tab : g_tabChecks) {
+			for (HWND hCheck : tab) {
+				DestroyWindow(hCheck);
+			}
+		}
 		//CleanupBreakpoints();
 		PostQuitMessage(0);
 		return 0;
@@ -334,11 +405,148 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			SWP_NOZORDER | SWP_NOACTIVATE);
 
 		AdjustLayout(hwnd);
+		// 强制重绘所有控件
+		for (const auto& tabIndex : g_tabChecks)
+		{
+			for (HWND hCheck : tabIndex)
+			{
+				if (hCheck)
+					InvalidateRect(hCheck, NULL, TRUE);
+			}
+		}
 		return 0;
 	}
 	}
 
 	return DefWindowProcW(hwnd, iMsg, wParam, lParam);
+}
+
+void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointInfo& apiInfo)
+{
+	//LRESULT state = SendMessage(hButton, BM_GETCHECK, 0, 0);
+	bool isChecked = apiInfo.bBpSet;
+
+	// 设置背景颜色
+	HBRUSH hBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+	FillRect(pDrawItem->hDC, &pDrawItem->rcItem, hBrush);
+	DeleteObject(hBrush);
+
+	// 设置文本颜色
+	SetTextColor(pDrawItem->hDC, GetSysColor(COLOR_WINDOWTEXT));
+	SetBkMode(pDrawItem->hDC, TRANSPARENT);
+
+	// 计算尺寸
+	const int checkSize = MulDiv(16, g_dpi.current, 96);
+	const int margin = MulDiv(4, g_dpi.current, 96);
+
+	// 获取字体高度
+	TEXTMETRIC tm;
+	GetTextMetrics(pDrawItem->hDC, &tm);
+	int checkBoxSize = tm.tmHeight;
+
+	// 计算文本区域
+	RECT rcText = pDrawItem->rcItem;
+	rcText.left += checkBoxSize + 5; // 左边距（为复选框留出空间）
+	rcText.right -= 5; // 右边距
+
+	RECT rcCheck;
+	GetClientRect(hButton, &rcCheck);
+
+	// 计算复选框位置
+	rcCheck.left += margin;
+	rcCheck.top += (rcCheck.bottom - rcCheck.top - checkSize) / 2;
+	rcCheck.right = rcCheck.left + checkSize;
+	rcCheck.bottom = rcCheck.top + checkSize;
+
+	UINT uState = DFCS_BUTTONCHECK;
+	if (isChecked) uState |= DFCS_CHECKED;
+	if (pDrawItem->itemState & ODS_DISABLED) uState |= DFCS_INACTIVE;
+	DrawFrameControl(pDrawItem->hDC, &rcCheck, DFC_BUTTON, uState);
+
+	// 绘制对勾
+	if (isChecked) {
+		HPEN hPen = CreatePen(PS_SOLID, MulDiv(2, g_dpi.current, 96), RGB(0, 0, 0));
+		HGDIOBJ hOldPen = SelectObject(pDrawItem->hDC, hPen);
+
+		const POINT pts[] = {
+			{ rcCheck.left + MulDiv(3, g_dpi.current, 96), rcCheck.top + MulDiv(7, g_dpi.current, 96) },
+			{ rcCheck.left + MulDiv(7, g_dpi.current, 96), rcCheck.top + MulDiv(11, g_dpi.current, 96) },
+			{ rcCheck.left + MulDiv(13, g_dpi.current, 96), rcCheck.top + MulDiv(3, g_dpi.current, 96) }
+		};
+		Polyline(pDrawItem->hDC, pts, 3);
+
+		SelectObject(pDrawItem->hDC, hOldPen);
+		DeleteObject(hPen);
+	}
+
+	// 绘制 dllName
+	if (!apiInfo.dllName.empty()) {
+		DrawTextW(pDrawItem->hDC, apiInfo.dllName.c_str(), -1, &rcText, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+	}
+	// 绘制 apiName
+	RECT rcApiName = rcText;
+	rcApiName.left = rcCheck.right + margin; // apiName 的起始位置
+	DrawTextW(pDrawItem->hDC, apiInfo.apiName.c_str(), -1, &rcApiName, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+	// 绘制 description（右对齐）
+	RECT rcDescription = rcText;
+	DrawTextW(pDrawItem->hDC, apiInfo.description.c_str(), -1, &rcDescription, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
+}
+
+void CreateTabs(TCITEMW& ti, HWND& hwnd)
+{
+	if (!IsWindow(hwnd)) {
+		_plugin_logprintf("failed：Parent Window handdle invalid\n");
+		return;
+	}
+
+	g_tabChecks.clear();
+	g_tabChecks.reserve(g_Api_Groups.size());
+	for (size_t tabIdx = 0; tabIdx < g_Api_Groups.size(); tabIdx++)
+	{
+		if (g_Api_Groups[tabIdx].groupName.empty()) {
+			_plugin_logprintf("failed：tab %d groupName empty\n", tabIdx);
+			continue;
+		}
+		ti.mask = TCIF_TEXT;
+		ti.pszText = (LPWSTR)g_Api_Groups[tabIdx].groupName.c_str();
+		TabCtrl_InsertItem(hTabControl, tabIdx, &ti);
+
+		size_t checkCount = g_Api_Groups[tabIdx].apiList.size();
+
+		if (g_Api_Groups[tabIdx].apiList.empty()) {
+			_plugin_logprintf("failed：tab %d  apiList empty\n", tabIdx);
+			continue;
+		}
+
+		std::vector<HWND> Hchecks;
+		Hchecks.reserve(checkCount);
+		for (int chkIdx = 0; chkIdx < checkCount; chkIdx++) {
+
+			//UINT_PTR controlID = IDC_CHECK_FIRST + tabIdx * MAX_CHECKS_PER_TAB + chkIdx;
+			HWND hCheck = CreateWindowW(
+				L"BUTTON",
+				WC_BUTTON,
+				WS_CHILD | WS_VISIBLE | BS_MULTILINE | BS_OWNERDRAW,
+				0, 0, 0, 0,
+				hwnd,
+				reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CHECK_FIRST + (tabIdx * MAX_CHECKS_PER_TAB) + chkIdx)),
+				g_hInstance,
+				nullptr  // 参数11
+			);
+
+			//_plugin_logprintf("Create tabs %d,TabcheckCount ID: %d controlID: %d\n", tabIdx, checkCount, IDC_CHECK_FIRST + tabIdx * MAX_CHECKS_PER_TAB + chkIdx);
+
+			if (hCheck) {
+				SendMessageW(hCheck, WM_SETFONT, (WPARAM)g_dpi.font, TRUE);
+				g_checkboxMap[hCheck] = std::make_pair(tabIdx, chkIdx);
+				Hchecks.push_back(hCheck);
+			}
+
+		}
+		g_tabChecks.push_back(Hchecks);
+
+	}
 }
 
 // 布局调整
@@ -362,15 +570,28 @@ void AdjustLayout(HWND hwnd) {
 		0, 0, rc.right, tabHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE);
 
-	for (int i = 0; i < CHECK_COUNT; i++) {
+	// 计算每列的宽度和每行的高度
+	int totalMargin = margin * (CHECKBOX_COLUMNS + 1);
+	int availableWidth = width - totalMargin;
+	int availableHeight = height - tabHeight;
+
+	//调整复选框
+	CurTab = TabCtrl_GetCurSel(hTabControl);
+	if (CurTab == -1) {
+		return; // 没有选中的选项卡
+	}
+
+	const auto& checkBoxes = g_tabChecks[CurTab];
+
+	for (int i = 0; i < checkBoxes.size(); i++) {
 		int col = i % CHECKBOX_COLUMNS;
 		int row = i / CHECKBOX_COLUMNS;
 		int x = margin + col * (checkWidth + margin);
 		int y = tabHeight + margin + row * (checkHeight + margin);
 
-		SetWindowPos(hChecks[i], nullptr,
-			x, y, checkWidth, checkHeight,
-			SWP_NOZORDER | SWP_NOACTIVATE);
+		if (checkBoxes[i]) {
+			SetWindowPos(checkBoxes[i], nullptr, x, y, checkWidth, checkHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+		}
 	}
 }
 
@@ -425,7 +646,8 @@ void RecreateFont() {
 			SendMessageW(hwnd, WM_SETFONT, (WPARAM)g_dpi.font, TRUE);
 		}
 		return TRUE;
-		}, 0);
+		}, 0
+	);
 }
 
 

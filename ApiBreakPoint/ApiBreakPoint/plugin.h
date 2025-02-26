@@ -18,6 +18,13 @@ using namespace Script::Debug;
 using namespace Script::Register;
 
 #define MENU_MAINWINDOW_POPUP 1
+#define CHECKBOX_ROWS 3
+
+//const UINT IDC_TABCTRL = __COUNTER__ + 1500;
+//const UINT IDC_CHECK_FIRST = __COUNTER__ + 1500;
+#define IDC_TABCTRL 1500
+#define IDC_CHECK_FIRST 1500
+#define MAX_CHECKS_PER_TAB 100
 
 //functions
 bool pluginInit(PLUG_INITSTRUCT* initStruct);
@@ -40,125 +47,3 @@ struct DpiState {
 	HFONT tabfont = nullptr;
 };
 extern DpiState g_dpi;
-
-const UINT IDC_TABCTRL = __COUNTER__ + 1500;
-
-
-
-#define TAB_COUNT 15
-constexpr auto CHECK_COUNT = (25*3);
-
-struct ApiBreakPointInfo
-{
-	std::wstring dllName;
-	std::wstring apiName;
-	std::wstring description;
-	bool bWantToSetBp; // means weather user want bp set or not. true doesn't means bp really set, perhaps int3 erased or dll not loaded yet
-	bool bBpSet;        // 实际断点是否设置成功
-	bool bCmdSuccess; //BP执行是否成功
-
-	ApiBreakPointInfo(
-		std::wstring _dllName, 
-		std::wstring _apiName, 
-		std::wstring _description
-	): 
-		dllName(_dllName), 
-		apiName(_apiName),
-		description(_description), 
-		bWantToSetBp(false), 
-		bBpSet(false),
-		bCmdSuccess(false)
-		{}
-};
-
-struct ApiGroup
-{
-	std::wstring groupName;
-	std::vector<ApiBreakPointInfo> apiList;
-};
-
-extern ApiGroup g_Api_Groups[TAB_COUNT];
-
-// check box control ID
-const UINT IDC_CHECKS[CHECK_COUNT] =
-{
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-	__COUNTER__ + 1500,
-};
-
-
-
-

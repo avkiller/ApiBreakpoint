@@ -1,4 +1,4 @@
-#include "plugin.h"
+#include "ApiGroup.h"
 
 /*
  * Add API Breakpoint here.
@@ -8,7 +8,7 @@
  */
 #define CHINESE
 #ifdef CHINESE
-ApiGroup g_Api_Groups[TAB_COUNT] =
+std::vector<ApiGroup> g_Api_Groups =
 {
 	{
 		L"样本调试",
@@ -122,7 +122,9 @@ ApiGroup g_Api_Groups[TAB_COUNT] =
 	},
 	{
 		L"注入",
-		{
+		{	
+			ApiBreakPointInfo(L"",L"testme",L""),
+			ApiBreakPointInfo(L"",L"CreateFileW",L""),
 		}
 	},
 	{
@@ -494,7 +496,7 @@ ApiGroup g_Api_Groups[TAB_COUNT] =
 
 #else
 
-ApiGroup g_Api_Groups[TAB_COUNT] =
+std::vector<ApiGroup> g_Api_Groups =
 {
 	{
 		"Common",
@@ -927,3 +929,27 @@ ApiGroup g_Api_Groups[TAB_COUNT] =
 
 
 #endif
+
+
+//// 动态生成 IDC_CHECKS
+std::vector<UINT> GenerateIDC_CHECKS(size_t checkCount) {
+	std::vector<UINT> idcChecks(checkCount);
+	for (UINT i = 0; i < checkCount; i++) {
+		idcChecks[i] = __COUNTER__ + 1500 + i; // 动态生成 ID
+	}
+	return idcChecks;
+}
+//
+//
+//
+//// 初始化动态ID
+//void InitializeDynamicCheckIDs() {
+//	g_tabCheckIDs.clear();
+//	for (int tabIdx = 0; tabIdx < g_Api_Groups.size(); ++tabIdx) {
+//		std::vector<UINT> tabIDs;
+//		for (int chkIdx = 0; chkIdx < g_Api_Groups[tabIdx].apiList.size(); ++chkIdx) {
+//			tabIDs.push_back(__COUNTER__ + 1500 + tabIdx * 100);  // 动态生成ID，按标签页偏移
+//		}
+//		g_tabCheckIDs.push_back(tabIDs);
+//	}
+//}

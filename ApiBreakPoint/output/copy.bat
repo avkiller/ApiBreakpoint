@@ -6,14 +6,14 @@ if exist %batdir%\ApiBreakPoint.dp32 (
     ECHO "hello"
 	COPY /Y %batdir%\ApiBreakPoint.dp32 %x64dbgdir%\x32\plugins\ 
 	if errorlevel 1 (
-        echo "Copy failed"
-    ) else ( echo "Copy success" )
+        echo "Copy ApiBreakPoint.dp32 failed"
+    ) else ( echo "Copy ApiBreakPoint.dp32 success" )
 ) ELSE (echo "File not exist")
 
 
 if exist %batdir%\ApiBreakPoint.dp64 (
 	COPY /Y %batdir%\ApiBreakPoint.dp64 %x64dbgdir%\x64\plugins\ 
 	if errorlevel 1 (
-        echo "Copy failed"
-    ) else ( echo "Copy success" )
+        echo "Copy ApiBreakPoint.dp64 failed"
+    ) else ( echo "Copy ApiBreakPoint.dp64 success" )
 ) ELSE (echo "File not exist")
