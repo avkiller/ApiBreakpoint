@@ -10,3 +10,5 @@
 /ApiBreakPoint/ApiBreakPoint/x64/Release/
 *.pdb
 /ApiBreakPoint/output/*.zip
+/ApiBreakPoint/ApiBreakPoint/bak
+/ApiBreakPoint/ApiBreakPoint/x64/Debug
