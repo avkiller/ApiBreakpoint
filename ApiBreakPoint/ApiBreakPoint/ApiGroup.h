@@ -14,8 +14,8 @@ struct ApiBreakPointInfo
 	std::wstring apiName;
 	std::wstring description;
 	bool bWantToSetBp; // means weather user want bp set or not. true doesn't means bp really set, perhaps int3 erased or dll not loaded yet
-	bool bBpSet;        // 实际断点是否设置成功
-	bool bCmdSuccess; //BP执行是否成功
+	bool bBpSet;        // 瀹為檯鏂偣鏄惁璁剧疆鎴愬姛
+	bool bCmdSuccess; //BP鎵ц鏄惁鎴愬姛
 
 	ApiBreakPointInfo(
 		std::wstring _dllName,

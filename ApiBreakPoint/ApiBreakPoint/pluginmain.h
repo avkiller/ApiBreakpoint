@@ -4,7 +4,7 @@
 constexpr auto ClASS_NAME = L"ApiBreakpoint";
 constexpr auto PLUGIN_NAME = "ApiBreakpoint";
 constexpr auto API_BREAKPOINT_VERSION_MAJOR = 1;
-constexpr auto API_BREAKPOINT_VERSION_MINOR = 5;
+constexpr auto API_BREAKPOINT_VERSION_MINOR = 6;
 constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
 #include "pluginsdk/bridgemain.h"
@@ -32,6 +32,9 @@ constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 #include "pluginsdk/lz4/lz4file.h"
 #include "pluginsdk/TitanEngine/TitanEngine.h"
 #include "pluginsdk/XEDParse/XEDParse.h"
+
+#include "Settings.h"
+#include "Util.h"
 
 #ifdef _WIN64
 #pragma comment(lib, "pluginsdk/x64dbg.lib")

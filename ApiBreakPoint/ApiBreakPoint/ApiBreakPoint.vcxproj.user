@@ -8,11 +8,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>D:\Analyze\DebugTools\x64dbg\x32\x32dbg.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>b:\rf_x86.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>e:\work\git\re4b\readfile\rf_x86.exe</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>D:\Analyze\DebugTools\x64dbg\x32\x32dbg.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>b:\rf_x86.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>e:\work\git\re4b\readfile\rf_x86.exe</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

@@ -47,3 +47,12 @@ struct DpiState {
 	HFONT tabfont = nullptr;
 };
 extern DpiState g_dpi;
+
+enum ApiBreakPointMenuItems : int {
+	MENU_OPTIONS = 0,
+	MENU_PROFILES,
+	MENU_MAX
+};
+
+extern std::wstring g_api_BreakPointIniPath;
+extern scl::Settings g_settings;

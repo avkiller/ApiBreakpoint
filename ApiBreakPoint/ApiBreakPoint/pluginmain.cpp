@@ -1,6 +1,7 @@
 #include "pluginmain.h"
 #include "plugin.h"
 
+
 int pluginHandle;
 HWND hwndDlg;
 int hMenu;
@@ -42,6 +43,10 @@ EXTERN_C _declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD fdwRe
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
 		g_hInstance = hInst; // save instance handle for future use
+
+        auto wstrPath = scl::GetModuleFileNameW(g_hInstance);
+        wstrPath.resize(wstrPath.find_last_of(L'\\') + 1);
+        g_api_BreakPointIniPath = wstrPath + scl::Settings::kFileName;
 	}
 	return TRUE;
 }

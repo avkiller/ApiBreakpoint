@@ -318,13 +318,24 @@ if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevSe
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ApiGroup.h" />
+    <ClInclude Include="OptionsDialog.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginmain.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApiGroups.cpp" />
+    <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="pluginmain.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ApiBreakPoint.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
