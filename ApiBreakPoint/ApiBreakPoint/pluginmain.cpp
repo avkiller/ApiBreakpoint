@@ -44,9 +44,9 @@ EXTERN_C _declspec(dllexport) BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD fdwRe
 	{
 		g_hInstance = hInst; // save instance handle for future use
 
-        auto wstrPath = scl::GetModuleFileNameW(g_hInstance);
-        wstrPath.resize(wstrPath.find_last_of(L'\\') + 1);
-        g_api_BreakPointIniPath = wstrPath + scl::Settings::kFileName;
+        g_PluginDir = scl::GetModuleFileNameW(g_hInstance);
+        g_PluginDir.resize(g_PluginDir.find_last_of(L'\\') + 1);
+        g_settingIniPath = g_PluginDir + scl::Settings::kFileName;
 	}
 	return TRUE;
 }

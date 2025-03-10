@@ -318,16 +318,17 @@ if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevSe
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ApiGroup.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="OptionsDialog.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginmain.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApiGroups.cpp" />
+    <ClCompile Include="DefaultApiGroups.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="pluginmain.cpp" />

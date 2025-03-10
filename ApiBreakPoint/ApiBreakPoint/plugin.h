@@ -17,11 +17,6 @@ using namespace Script::Symbol;
 using namespace Script::Debug;
 using namespace Script::Register;
 
-#define MENU_MAINWINDOW_POPUP 1
-#define CHECKBOX_ROWS 3
-
-//const UINT IDC_TABCTRL = __COUNTER__ + 1500;
-//const UINT IDC_CHECK_FIRST = __COUNTER__ + 1500;
 #define IDC_TABCTRL 1500
 #define IDC_CHECK_FIRST 1500
 #define MAX_CHECKS_PER_TAB 100
@@ -50,9 +45,13 @@ extern DpiState g_dpi;
 
 enum ApiBreakPointMenuItems : int {
 	MENU_OPTIONS = 0,
+	MENU_MAINWINDOW_POPUP = 1,
+	MENU_CONFIG = 2,
 	MENU_PROFILES,
 	MENU_MAX
 };
 
-extern std::wstring g_api_BreakPointIniPath;
+extern std::wstring g_PluginDir;
+extern std::wstring g_settingIniPath;
+extern std::wstring g_api_BreakPointConfigPath;
 extern scl::Settings g_settings;

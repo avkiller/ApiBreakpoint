@@ -1,0 +1,72 @@
+[
+    {
+        "group_name": "样本调试",
+        "apis": [
+            {
+                "dll": "",
+                "func": "LoadLibraryA",
+                "desc": "加载DLL"
+            },
+            {
+                "dll": "",
+                "func": "LoadLibraryW",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "LoadLibraryExA",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "LoadLibraryExW",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "GetModuleHandleA",
+                "desc": "查找模块"
+            },
+            {
+                "dll": "",
+                "func": "GetModuleHandleW",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "GetModuleHandleExA",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "GetModuleHandleExW",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "CreateFileA",
+                "desc": "创建或打开文件"
+            },
+            {
+                "dll": "",
+                "func": "CreateFileW",
+                "desc": ""
+            },
+            {
+                "dll": "",
+                "func": "ReadFile",
+                "desc": "读文件"
+            },
+            {
+                "dll": "",
+                "func": "WriteFile",
+                "desc": "写文件"
+            },
+            {
+                "dll": "",
+                "func": "DeleteFileA",
+                "desc": "删除文件"
+            }
+        ]
+    }
+]

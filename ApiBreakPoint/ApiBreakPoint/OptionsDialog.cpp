@@ -6,6 +6,8 @@
 #include "Util.h"
 #include "pluginsdk/bridgemain.h"
 #include "resource.h"
+#include "plugin.h"
+#include "ApiGroup.h"
 
 extern DWORD ProcessId;
 extern bool bHooked;
@@ -49,6 +51,8 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
                 SendDlgItemMessageW(hDlg, IDC_PROFILES, CB_SETCURSEL, i, 0);
         }
 
+        SendDlgItemMessageW(hDlg, IDC_RELOAD_APICONFIG, CB_SETCURSEL, 0, 0);
+
         UpdateOptions(hDlg, &g_settings);
 
         break;
@@ -90,7 +94,7 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             strNewProfileName.resize(GUI_MAX_LINE_SIZE);
             if (!GuiGetLineWindow("New profile name?", &strNewProfileName[0]))
                 break;
-            wstrNewProfileName = scl::utf8_to_wstring(strNewProfileName);
+            wstrNewProfileName = scl::Utf8ToWide(strNewProfileName);
 
             if (!g_settings.AddProfile(wstrNewProfileName.c_str()))
                 break;
@@ -125,6 +129,15 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             SaveOptions(hDlg, &g_settings);
             break;
         }
+
+       /* case IDC_RELOAD_APICONFIG:
+        {
+            if (HIWORD(wParam) != BN_CLICKED)
+                break;
+
+            ReloadApiGroupsFromJson(g_api_BreakPointConfigPath);
+            break;
+        }*/
 
         default:
             break;

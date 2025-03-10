@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <windows.h>
+#include <mutex> 
 
 //#define TAB_COUNT 15
 //#define CHECK_COUNT (25*3)
@@ -39,3 +40,17 @@ struct ApiGroup
 };
 
 extern std::vector<ApiGroup> g_Api_Groups;
+
+bool LoadApiGroupsFromJson(
+	const std::wstring& filename,
+	std::vector<ApiGroup>& apiGroups
+);
+
+bool SaveDefaultApiGroupsToJson(const std::wstring& filename);
+
+void SetDefaultApiGroups();
+extern std::vector<ApiGroup> DefaultApiGroups;
+
+extern std::mutex g_ApiGroupsMutex;
+
+bool ReloadApiGroupsFromJson(const std::wstring& filename);

@@ -1,0 +1,2137 @@
+[
+  {
+    "groupName": "样本调试",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryA",
+        "description": "加载DLL"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleA",
+        "description": "查找模块"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "创建或打开文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadFile",
+        "description": "读文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteFile",
+        "description": "写文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteFileA",
+        "description": "删除文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateThread",
+        "description": "创建线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateRemoteThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenProcess",
+        "description": "打开进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteProcessMemory",
+        "description": "跨进程写内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadProcessMemory",
+        "description": "跨进程读内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateMutexA",
+        "description": "创建互斥体"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateMutexW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenMutexA",
+        "description": "打开互斥体"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenMutexW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateToolhelp32SnapShot",
+        "description": "枚举进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32ListFirst",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32ListNext",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32First",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32Next",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32First",
+        "description": "枚举模块"
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32Next",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32FirstW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32NextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32First",
+        "description": "枚举进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32FirstW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32Next",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32NextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "PostQuitMessage",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Toolhelp32ReadProcessMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwQueryInformationProcess",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetTimer",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetTempPathA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetTempPathW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateProcessA",
+        "description": "创建进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateProcessW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ShellExecuteA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ShellExecuteW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WinExec",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "UrlDownloadToFileA",
+        "description": "下载文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "UrlDownloadToFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDesktopWindow",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "对抗分析",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "IsDebuggerPresent",
+        "description": "检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "CheckRemoteDebuggerPresent",
+        "description": "检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQueryInformationProcess",
+        "description": "多个标志位检测调试器，检测父进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "UnhandledExceptionFilter",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OutputDebugStringA",
+        "description": "检查错误码探测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "OutputDebugStringW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetThreadContext",
+        "description": "探测硬件断点"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetProcessHeap",
+        "description": "LFH:低碎片堆"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetProcAddress",
+        "description": "检测HOOK"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtSetInformationThread",
+        "description": "向调试器隐藏线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtYieldExecution",
+        "description": "检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadProcessMemory",
+        "description": "int3断点检测"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualProtect",
+        "description": "修改内存权限触发异常检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualProtectEx",
+        "description": "修改内存权限触发异常检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlQueryProcessHeapInformation",
+        "description": "堆标志位检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlQueryProcessDebugInformation",
+        "description": "堆标志位检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQuerySystemInformation",
+        "description": "检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenProcess",
+        "description": "打开csrss.exe成功表示有调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "独占方式打开文件，失败表示有调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtClose",
+        "description": "捕获EXCEPTION_INVALID_HANDLE异常表示存在调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "CloseHandle",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQueryObject",
+        "description": "探测调试对象"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetUnhandledExceptionFilter",
+        "description": "如果存在调试器，则回调不调用"
+      },
+      {
+        "dllName": "",
+        "apiName": "RaiseException",
+        "description": "抛出DBG_CONTROL_C等特殊异常，未接管则有调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlRaiseException",
+        "description": "抛出DBG_CONTROL_C等特殊异常，未接管则有调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLocalTime",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetSystemTime",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetTickCount",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtGetTickCount",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "QueryPerformanceCounter",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "timeGetTime",
+        "description": "执行耗时估算，超时认为被调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQueryVirtualMemory",
+        "description": "内存断点检测"
+      },
+      {
+        "dllName": "",
+        "apiName": "AddVectoredExceptionHandler",
+        "description": "注册VEH"
+      },
+      {
+        "dllName": "",
+        "apiName": "RemoveVectoredExceptionHandler",
+        "description": "移除VEH"
+      },
+      {
+        "dllName": "",
+        "apiName": "DebugActiveProcess",
+        "description": "创建子进程调试自己"
+      },
+      {
+        "dllName": "",
+        "apiName": "DbgUiDebugActiveProcess",
+        "description": "创建子进程调试自己"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtDebugActiveProcess",
+        "description": "创建子进程调试自己"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetConsoleCtrlHandler",
+        "description": "拦截CTRL_C_EVENT异常"
+      },
+      {
+        "dllName": "",
+        "apiName": "BlockInput",
+        "description": "一直返回TRUE表明被HOOK"
+      },
+      {
+        "dllName": "",
+        "apiName": "EnumWindows",
+        "description": "检测父进程窗口标题"
+      },
+      {
+        "dllName": "",
+        "apiName": "SwitchDesktop",
+        "description": "切换桌面反调试"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowA",
+        "description": "探测调试器窗口类名"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowW",
+        "description": "探测调试器窗口类名"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowExA",
+        "description": "探测调试器窗口类名"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowExW",
+        "description": "探测调试器窗口类名"
+      },
+      {
+        "dllName": "",
+        "apiName": "DbgSetDebugFilterState",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SwitchToThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetWriteWatch",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "注入",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "OpenProcess",
+        "description": "打开进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "SuspendThread",
+        "description": "挂起线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetThreadContext",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetThreadContext",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ResumeThread",
+        "description": "恢复线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateRemoteThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteProcessMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualAllocEx",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "网络",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "send",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "sendto",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WSASend",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WSASendTo",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "recv",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "inet_addr",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "connect",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "UrlDownloadToFileA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "UrlDownloadToFileW",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "对话框",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "MessageBoxA",
+        "description": "弹对话框"
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBoxW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBoxExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBoxExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBoxIndirectA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBoxIndirectW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateWindowExA",
+        "description": "创建窗口"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateWindowExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateWindowA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateWindowW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DestroyWindow",
+        "description": "销毁窗口"
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxA",
+        "description": "模态对话框"
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxParamA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxParamW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxIndirectA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxIndirectW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxIndirectParamA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DialogBoxIndirectParamW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "EndDialog",
+        "description": "清除模态对话框"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetWindowTextA",
+        "description": "取控件文本"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetWindowTextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowTextA",
+        "description": "设置控件文本"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowTextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDlgItemTextA",
+        "description": "取控件文本"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDlgItemTextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetDlgItemTextA",
+        "description": "设置控件文本"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetDlgItemTextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDlgItemInt",
+        "description": "取控件中整数"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetDlgItemInt",
+        "description": "设置控件中整数"
+      },
+      {
+        "dllName": "",
+        "apiName": "SendMessageA",
+        "description": "发消息"
+      },
+      {
+        "dllName": "",
+        "apiName": "SendMessageW",
+        "description": "发消息"
+      },
+      {
+        "dllName": "",
+        "apiName": "SendDlgItemMessage",
+        "description": "发消息"
+      },
+      {
+        "dllName": "",
+        "apiName": "IsDialogMessageA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "IsDialogMessageW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DispatchMessageA",
+        "description": "消息派发"
+      },
+      {
+        "dllName": "",
+        "apiName": "DispatchMessageW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CallWindowProcA",
+        "description": "调用窗口过程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CallWindowProcW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DefWindowProcA",
+        "description": "默认消息处理"
+      },
+      {
+        "dllName": "",
+        "apiName": "DefWindowProcW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MessageBeep",
+        "description": "系统警告声"
+      },
+      {
+        "dllName": "",
+        "apiName": "DrawTextA",
+        "description": "文本描绘到矩形中"
+      },
+      {
+        "dllName": "",
+        "apiName": "DrawTextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DrawTextExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DrawTextExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowA",
+        "description": "获取窗口句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindWindowW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetClipboardData",
+        "description": "获取剪贴板数据"
+      },
+      {
+        "dllName": "",
+        "apiName": "CoInitialize",
+        "description": "初始化COM库"
+      },
+      {
+        "dllName": "",
+        "apiName": "CoCreateInstance",
+        "description": "创建COM对象"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadIconA",
+        "description": "载入图标资源"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadIconW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowLongA",
+        "description": "设置窗口属性"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowLongW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowLongPtrA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetWindowLongPtrW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ShowWindow",
+        "description": "显示窗口"
+      },
+      {
+        "dllName": "",
+        "apiName": "UpdateWindow",
+        "description": "更新窗口"
+      },
+      {
+        "dllName": "",
+        "apiName": "TranslateMessage",
+        "description": "消息队列"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetMessageA",
+        "description": "取消息队列"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetMessageW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "PeekMessageA",
+        "description": "查消息队列"
+      },
+      {
+        "dllName": "",
+        "apiName": "PeekMessageW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetMenu",
+        "description": "建菜单"
+      },
+      {
+        "dllName": "",
+        "apiName": "DestroyMenu",
+        "description": "删除菜单"
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteMenu",
+        "description": "删除菜单项"
+      },
+      {
+        "dllName": "",
+        "apiName": "EnableMenuItem",
+        "description": "菜单有无变灰"
+      },
+      {
+        "dllName": "",
+        "apiName": "EnableWindow",
+        "description": "禁止键盘鼠标输入"
+      }
+    ]
+  },
+  {
+    "groupName": "文件处理",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "创建或打开文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenFile",
+        "description": "打开文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadFile",
+        "description": "读文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteFile",
+        "description": "写文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetFileSize",
+        "description": "取文件大小"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindFirstFileA",
+        "description": "查找文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindFirstFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleFileNameA",
+        "description": "查模块路径"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleFileNameW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenFileMappingA",
+        "description": "打开文件映射对象"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenFileMappingW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryA",
+        "description": "加载DLL"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileMappingA",
+        "description": "创建文件对象"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileMappingW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CopyFileA",
+        "description": "复制文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "CopyFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CopyFileExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CopyFileExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SetFilePointer",
+        "description": "设置文件读写位置"
+      },
+      {
+        "dllName": "",
+        "apiName": "MoveFileA",
+        "description": "移动文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "MoveFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MoveFileExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MoveFileExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteFileA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteFileW",
+        "description": "删除文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadCursorFromFileA",
+        "description": "创建文件光标"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadCursorFromFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileStringA",
+        "description": "INI重启验证常用"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileStringW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileIntA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileIntW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileStringA",
+        "description": "取字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetPrivateProfileStringW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WritePrivateProfileStringA",
+        "description": "设置字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "WritePrivateProfileStringW",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "时间处理",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "SetSystemTime",
+        "description": "设置系统时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "TimerProc",
+        "description": "回调函数"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetLocalTime",
+        "description": "设置本地时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLocalTime",
+        "description": "获取本地时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetSystemTime",
+        "description": "获取系统时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetCurrentTime",
+        "description": "获取系统时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetFileTime",
+        "description": "获取文件时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetTickCount",
+        "description": "系统启动后所经过的毫秒数"
+      },
+      {
+        "dllName": "",
+        "apiName": "CompareFileTime",
+        "description": "比较文件时间"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetTimer",
+        "description": "创建定时器"
+      },
+      {
+        "dllName": "",
+        "apiName": "KillTimer",
+        "description": "移除定时器"
+      },
+      {
+        "dllName": "",
+        "apiName": "timeSetEvent",
+        "description": "多媒体定时器"
+      }
+    ]
+  },
+  {
+    "groupName": "进程函数",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateThread",
+        "description": "创建线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateRemoteThread",
+        "description": "创建远程线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleA",
+        "description": "查模块基址"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenMutexA",
+        "description": "打开互斥体"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenMutexW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteProcessMemory",
+        "description": "写内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwWriteVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadProcessMemory",
+        "description": "读内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwReadVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateProcessA",
+        "description": "创建进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateProcessW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenProcess",
+        "description": "打开进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "ExitProcess",
+        "description": "结束进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "ExitThread",
+        "description": "结束当前线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "TerminateProcess",
+        "description": "终止进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "TerminateThread",
+        "description": "终止线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateToolhelp32Snapshot",
+        "description": "进程快照"
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32First",
+        "description": "取进程句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32FirstW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32Next",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Process32NextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32Next",
+        "description": "取模块句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32NextW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32First",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Module32FirstW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32ListFirst",
+        "description": "取堆句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32ListNext",
+        "description": "取堆句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetProcessHeap",
+        "description": "取堆句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32First",
+        "description": "取进程堆相关信息"
+      },
+      {
+        "dllName": "",
+        "apiName": "Heap32Next",
+        "description": "取进程堆相关信息"
+      },
+      {
+        "dllName": "",
+        "apiName": "PostQuitMessage",
+        "description": "终止线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "IsDebuggerPresent",
+        "description": "检测调试器"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenProcessToken",
+        "description": "获取进程访问令牌句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenThreadToken",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwQueryInformationProcess",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "内存",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "FindWindow",
+        "description": "取窗口句柄"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetWindowThreadProcessId",
+        "description": "获取窗口进程ID"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenProcess",
+        "description": "打开进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualAllocEx",
+        "description": "申请内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteProcessMemory",
+        "description": "写内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadProcessMemory",
+        "description": "读内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateRemoteThread",
+        "description": "创建远程线程"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateMutexA",
+        "description": "创建互斥体"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateMutexW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleA",
+        "description": "查模块基址"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetProcAddress",
+        "description": "查函数地址"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualAlloc",
+        "description": "申请内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "HeapAlloc",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualFree",
+        "description": "释放内存"
+      },
+      {
+        "dllName": "",
+        "apiName": "HeapFree",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryA",
+        "description": "载入DLL"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetVersion",
+        "description": "获取系统版本"
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwAllocateVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwWriteVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwReadVirtualMemory",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "磁盘",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "GetDiskFreeSpaceA",
+        "description": "获取磁盘信息"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDiskFreeSpaceExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDiskFreeSpaceExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDriveTypeA",
+        "description": "判断磁盘驱动器类型"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDriveTypeW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLogicalDrives",
+        "description": "取驱动器字母"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLogicalDriveStringsA",
+        "description": "取驱动器路径"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLogicalDriveStringsW",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "注册表",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "RegOpenKeyA",
+        "description": "打开注册表项"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegOpenKeyW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegOpenKeyExA",
+        "description": "重启验证常用"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegOpenKeyExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegCreateKeyExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegCreateKeyExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegQueryValueA",
+        "description": "取注册表键值"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegQueryValueW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegQueryValueExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegQueryValueExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegCreateKeyA",
+        "description": "创建新项"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegCreateKeyW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegCloseKey",
+        "description": "关闭注册表"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegDeleteKeyA",
+        "description": "删除键值"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegDeleteKeyW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegEnumKeyExA",
+        "description": "枚举子项"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegEnumKeyExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegSetValueA",
+        "description": "设置默认值"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegSetValueW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegSetValueExA",
+        "description": "设置指定项的值"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegSetValueExW",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "groupName": "VB",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "FindResourceA",
+        "description": "VB校验"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "VB校验"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetVolumeInformation",
+        "description": "磁盘卷"
+      },
+      {
+        "dllName": "",
+        "apiName": "MultiByteToWideChar",
+        "description": "A转U字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "WideCharToMultiByte",
+        "description": "U转A字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetFileSize",
+        "description": "获取文件大小"
+      },
+      {
+        "dllName": "",
+        "apiName": "VarCyFromStr",
+        "description": "字符串转整型"
+      },
+      {
+        "dllName": "",
+        "apiName": "arBstrFromI2",
+        "description": "整型转字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcFileLen",
+        "description": "VB自校验"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcFileLenth",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcMsgBox",
+        "description": "显示对话框"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcInputBox",
+        "description": "输入框"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetMemStr",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcR8ValFromBstr",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcGetPresendDate",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcBeep",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcTrimBstr",
+        "description": "字符串去除空格"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcMidCharVar",
+        "description": "字符串中取字符"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcLeftCharVar",
+        "description": "字符串左边取字符"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcRightCharVar",
+        "description": "字符串右边取字符"
+      },
+      {
+        "dllName": "",
+        "apiName": "StrConv",
+        "description": "转换字符串"
+      },
+      {
+        "dllName": "",
+        "apiName": "rtcT8ValFromBstr",
+        "description": "字符串转浮点数"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaI2Str",
+        "description": "字符转1字节数值"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaI4Str",
+        "description": "字符转4字节数值"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbar4Str",
+        "description": "字符转4浮点型"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbar8Str",
+        "description": "字符转8浮点型"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavaradd",
+        "description": "变量值相加"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavarsub",
+        "description": "变量值相减"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavarmul",
+        "description": "变量值相乘"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavaridiv",
+        "description": "变量值相除"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavarxor",
+        "description": "变量值异或"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavarcat",
+        "description": "变量值相连"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaStrCat",
+        "description": "字符串相连"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaVarCat",
+        "description": "连接字串"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaStrCmp",
+        "description": "字符串比较"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaStrComp",
+        "description": "字符串比较"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaVarTstEq",
+        "description": "比较变量"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaFreeStr",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaStrCopy",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbaLenBstr",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbavarfornext",
+        "description": "循环结构"
+      },
+      {
+        "dllName": "",
+        "apiName": "__vbafreeobj",
+        "description": "释放对象"
+      }
+    ]
+  },
+  {
+    "groupName": "VC/MFC",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "lstrcmpA",
+        "description": "字符串比较"
+      },
+      {
+        "dllName": "",
+        "apiName": "DefWindowProcA",
+        "description": "调用默认窗口过程"
+      },
+      {
+        "dllName": "",
+        "apiName": "DefWindowProcW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegisterClassA",
+        "description": "注册窗口类"
+      },
+      {
+        "dllName": "",
+        "apiName": "RegisterClassW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegisterClassExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RegisterClassExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "FindResourceA",
+        "description": "查找资源"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindResourceW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadResource",
+        "description": "加载资源"
+      },
+      {
+        "dllName": "",
+        "apiName": "SetHandleCount",
+        "description": "取变量地址"
+      },
+      {
+        "dllName": "",
+        "apiName": "IsWindowEnabled",
+        "description": "可否输入键鼠"
+      }
+    ]
+  },
+  {
+    "groupName": "加密狗/穿山甲",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateThread",
+        "description": "寻找OEP"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetModuleHandleA",
+        "description": "魔幻跳转"
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenMutexA",
+        "description": "1转单进程两次改跳"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetSystemTime",
+        "description": "补丁KEY"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualProtect",
+        "description": "2EAX为401000返回"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileMappingA",
+        "description": "辅助"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryA",
+        "description": "载入DLL"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExA",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryExW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RefreshDeviceList",
+        "description": "深思3"
+      },
+      {
+        "dllName": "",
+        "apiName": "DeviceIoControl",
+        "description": "操作设备"
+      },
+      {
+        "dllName": "",
+        "apiName": "Prestochangoselector",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "FreeEnvironmentStringsA",
+        "description": "释放环境字串块"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLogicalDriveStringsA",
+        "description": "取列表"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLogicalDrives",
+        "description": "取驱动器列表"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetDriveTypeA",
+        "description": "判断驱动器类型"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "读狗驱动"
+      },
+      {
+        "dllName": "",
+        "apiName": "FindFirstFileA",
+        "description": "查找文件"
+      }
+    ]
+  },
+  {
+    "groupName": "其他",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "FindFirstFileA",
+        "description": "查找文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "ExitProcess",
+        "description": "程序退出"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetStartupInfoA",
+        "description": "获取启动信息"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetFileSize",
+        "description": "获取文件大小"
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualProtect",
+        "description": "Vmp脱壳"
+      },
+      {
+        "dllName": "",
+        "apiName": "ExitWindowsEx",
+        "description": "关机断点"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "自校验"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetVersion",
+        "description": "易语言脱壳"
+      },
+      {
+        "dllName": "",
+        "apiName": "send",
+        "description": "发送封包"
+      },
+      {
+        "dllName": "",
+        "apiName": "WSASend",
+        "description": "发送封包"
+      },
+      {
+        "dllName": "",
+        "apiName": "recv",
+        "description": "接收封包"
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlAdjustPrivilege",
+        "description": "易语言快速关机"
+      },
+      {
+        "dllName": "",
+        "apiName": "SHFormatDrive",
+        "description": "格盘API"
+      },
+      {
+        "dllName": "",
+        "apiName": "RemoveDirectoryA",
+        "description": "删除目录"
+      },
+      {
+        "dllName": "",
+        "apiName": "DeleteFileA",
+        "description": "删除文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "GetLastError",
+        "description": "返回错误码"
+      }
+    ]
+  }
+]

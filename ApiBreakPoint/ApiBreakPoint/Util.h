@@ -61,10 +61,10 @@ namespace scl
         return IniSaveString(file, section, key, ss.str().c_str());
     }
 
-    std::string wstring_to_utf8(const std::wstring& wstr);
-    std::wstring utf8_to_wstring(const std::string& str);
-    std::string wstring_to_utf8(const std::wstring& wstr);
-    std::wstring utf8_to_wstring(const std::string& str);
+    std::string WideToUtf8(const std::wstring& wstr);
+    std::wstring Utf8ToWide(const std::string& str);
+    //std::string wstring_to_utf8(const std::wstring& wstr);
+    //std::wstring Utf8ToWide(const std::string& str);
 
     std::wstring GetDlgItemTextW(HWND hDlg, int nIDDlgItem);
     std::wstring fmtw(const wchar_t* fmt, ...);

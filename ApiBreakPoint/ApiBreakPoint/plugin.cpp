@@ -31,6 +31,8 @@ std::vector<std::vector<HWND>> g_tabChecks;
 
 std::unordered_map<HWND, std::pair<size_t, size_t>> g_checkboxMap;
 
+std::vector<ApiGroup> g_Api_Groups;
+
 DWORD WINAPI MsgLoopThread(LPVOID);
 LRESULT CALLBACK ApiBreakPointManageWndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
@@ -50,7 +52,9 @@ DpiState g_dpi = {
 	.tabfont = nullptr   // ³õÊ¼×ÖÌå¾ä±ú
 };
 
-std::wstring g_api_BreakPointIniPath;
+std::wstring g_PluginDir;
+std::wstring g_settingIniPath;
+std::wstring g_api_BreakPointConfigPath;
 scl::Settings g_settings;
 
 //Initialize your plugin data here.
@@ -69,16 +73,30 @@ void pluginStop()
 //Do GUI/Menu related things here.
 void pluginSetup()
 {
-	g_settings.Load(g_api_BreakPointIniPath.c_str());
+	g_settings.Load(g_settingIniPath.c_str());
+
+	std::wstring s_Api_BreakPoint_FileName = g_settings.opts().apiGroupFileName;
+	if (!s_Api_BreakPoint_FileName.empty()) {
+		g_api_BreakPointConfigPath = g_PluginDir + s_Api_BreakPoint_FileName;
+		if (!LoadApiGroupsFromJson(g_api_BreakPointConfigPath, g_Api_Groups)) {
+			SetDefaultApiGroups();
+			SaveDefaultApiGroupsToJson(L"default_api_groups.json");
+		}
+
+	}
 	_plugin_menuaddentry(hMenu, MENU_MAINWINDOW_POPUP, "&ApiBreakpoint Manage");
 	_plugin_menuaddentry(hMenu, MENU_OPTIONS, "&Options");
+
+	int hApiConfig = _plugin_menuadd(hMenu, "&API Config");
+	_plugin_menuaddentry(hApiConfig, MENU_CONFIG, "&Reload API CONFIG");
+
 	int hProfile = _plugin_menuadd(hMenu, "&Load Profile");
 
 	//add profiles to menu
 	for (size_t i = 0; i < g_settings.profile_names().size(); i++)
 	{
 		std::wstring profile = g_settings.profile_names()[i];
-		auto mbstrName = scl::wstring_to_utf8(profile);
+		auto mbstrName = scl::WideToUtf8(profile);
 		_plugin_menuaddentry(hProfile, (int)i + MENU_MAX, mbstrName.c_str());
 	}
 }
@@ -735,6 +753,12 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENT
 				_plugin_logprintf("Failed to create thread %s \n", MB_ICONERROR);
 			}
 		}
+		break;
+	}
+
+	case MENU_CONFIG:
+	{
+		ReloadApiGroupsFromJson(g_api_BreakPointConfigPath);
 		break;
 	}
 
