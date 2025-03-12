@@ -55,3 +55,4 @@ extern std::wstring g_PluginDir;
 extern std::wstring g_settingIniPath;
 extern std::wstring g_api_BreakPointConfigPath;
 extern scl::Settings g_settings;
+

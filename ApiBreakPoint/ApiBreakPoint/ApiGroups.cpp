@@ -1,4 +1,4 @@
-#include <fstream>
+ï»¿#include <fstream>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -16,30 +16,30 @@ using ordered_json = nlohmann::ordered_json;
 
 std::mutex g_ApiGroupsMutex;
 
-// ¶¯Ì¬Éú³É IDC_CHECKS
+// åŠ¨æ€ç”Ÿæˆ IDC_CHECKS
 std::vector<UINT> GenerateIDC_CHECKS(size_t checkCount) {
 	std::vector<UINT> idcChecks(checkCount);
 	for (UINT i = 0; i < checkCount; i++) {
-		idcChecks[i] = __COUNTER__ + 1500 + i; // ¶¯Ì¬Éú³É ID
+		idcChecks[i] = __COUNTER__ + 1500 + i; // åŠ¨æ€ç”Ÿæˆ ID
 	}
 	return idcChecks;
 }
 //
 //
 //
-//// ³õÊ¼»¯¶¯Ì¬ID
+//// åˆå§‹åŒ–åŠ¨æ€ID
 //void InitializeDynamicCheckIDs() {
 //	g_tabCheckIDs.clear();
 //	for (int tabIdx = 0; tabIdx < g_Api_Groups.size(); ++tabIdx) {
 //		std::vector<UINT> tabIDs;
 //		for (int chkIdx = 0; chkIdx < g_Api_Groups[tabIdx].apiList.size(); ++chkIdx) {
-//			tabIDs.push_back(__COUNTER__ + 1500 + tabIdx * 100);  // ¶¯Ì¬Éú³ÉID£¬°´±êÇ©Ò³Æ«ÒÆ
+//			tabIDs.push_back(__COUNTER__ + 1500 + tabIdx * 100);  // åŠ¨æ€ç”ŸæˆIDï¼ŒæŒ‰æ ‡ç­¾é¡µåç§»
 //		}
 //		g_tabCheckIDs.push_back(tabIDs);
 //	}
 //}
 
-// JSON ¼ÓÔØº¯Êı
+// JSON åŠ è½½å‡½æ•°
 bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& apiGroups) {
 	std::ifstream file{ std::filesystem::path(filename) };
 	if (!file.is_open()) return false;
@@ -49,8 +49,9 @@ bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& 
 		file >> j;
 
 		for (const auto& groupJson : j) {
-			ApiGroup group;
-			group.groupName = scl::Utf8ToWide(groupJson["groupName"].get<std::string>());
+			/*ApiGroup group;
+			group.groupName = scl::Utf8ToWide(groupJson["groupName"].get<std::string>());*/
+			ApiGroup group(scl::Utf8ToWide(groupJson["groupName"].get<std::string>()));
 
 			for (const auto& apiJson : groupJson["apiList"]) {
 				std::string dllName = apiJson.value("dllName", "");
@@ -63,19 +64,19 @@ bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& 
 					scl::Utf8ToWide(description)
 				);
 			}
-
+			//group.UpdateMaxApiNameLength();
 			apiGroups.push_back(std::move(group));
 		}
 
 		return true;
 	}
 	catch (const std::exception& e) {
-		std::cerr << "JSON ´íÎó: " << e.what() << std::endl;
+		std::cerr << "JSON é”™è¯¯: " << e.what() << std::endl;
 		return false;
 	}
 }
 
-// ĞòÁĞ»¯ ApiBreakPointInfo µ½ JSON£¨×Ö¶ÎË³ĞòÎŞ¹Ø½ôÒª£©
+// åºåˆ—åŒ– ApiBreakPointInfo åˆ° JSONï¼ˆå­—æ®µé¡ºåºæ— å…³ç´§è¦ï¼‰
 void to_json(ordered_json& j, const ApiBreakPointInfo& api) {
 	j = ordered_json{
 		{"dllName", scl::WideToUtf8(api.dllName)},
@@ -84,21 +85,21 @@ void to_json(ordered_json& j, const ApiBreakPointInfo& api) {
 	};
 }
 
-// ĞòÁĞ»¯ ApiGroup µ½ JSON£¨±£³Ö×Ö¶ÎË³Ğò£©
+// åºåˆ—åŒ– ApiGroup åˆ° JSONï¼ˆä¿æŒå­—æ®µé¡ºåºï¼‰
 void to_json(ordered_json& j, const ApiGroup& group) {
-	j = ordered_json{  // Ê¹ÓÃ ordered_json ´úÌæÆÕÍ¨ json
-		{"groupName", scl::WideToUtf8(group.groupName)},  // µÚÒ»¸ö×Ö¶Î
-		{"apiList", group.apiList}                     // µÚ¶ş¸ö×Ö¶Î
+	j = ordered_json{  // ä½¿ç”¨ ordered_json ä»£æ›¿æ™®é€š json
+		{"groupName", scl::WideToUtf8(group.groupName)},  // ç¬¬ä¸€ä¸ªå­—æ®µ
+		{"apiList", group.apiList}                     // ç¬¬äºŒä¸ªå­—æ®µ
 	};
 }
 
 
-// ±£´æÄ¬ÈÏÅäÖÃµ½ JSON ÎÄ¼ş
+// ä¿å­˜é»˜è®¤é…ç½®åˆ° JSON æ–‡ä»¶
 bool SaveDefaultApiGroupsToJson(const std::wstring& filename) {
 	try {
-		ordered_json  j = DefaultApiGroups; // ×Ô¶¯µ÷ÓÃ to_json ĞòÁĞ»¯
+		ordered_json  j = DefaultApiGroups; // è‡ªåŠ¨è°ƒç”¨ to_json åºåˆ—åŒ–
 		std::ofstream file(filename);
-		file << j.dump(2); // Ëõ½ø 2 ¿Õ¸ñÃÀ»¯¸ñÊ½
+		file << j.dump(2); // ç¼©è¿› 2 ç©ºæ ¼ç¾åŒ–æ ¼å¼
 		return true;
 	}
 	catch (...) {
@@ -110,14 +111,14 @@ bool SaveDefaultApiGroupsToJson(const std::wstring& filename) {
 bool ReloadApiGroupsFromJson(const std::wstring& filename) {
 	std::vector<ApiGroup> new_groups;
 
-	// ³¢ÊÔ¼ÓÔØĞÂÅäÖÃ
+	// å°è¯•åŠ è½½æ–°é…ç½®
 	if (!LoadApiGroupsFromJson(filename, new_groups)) {
-		return false;  // ¼ÓÔØÊ§°Ü£¬±£Áô¾ÉÅäÖÃ
+		return false;  // åŠ è½½å¤±è´¥ï¼Œä¿ç•™æ—§é…ç½®
 	}
 
-	// ¼ÓËø±£»¤È«¾Ö±äÁ¿
+	// åŠ é”ä¿æŠ¤å…¨å±€å˜é‡
 	std::lock_guard<std::mutex> lock(g_ApiGroupsMutex);
-	g_Api_Groups = std::move(new_groups);  // Ô­×ÓĞÔÌæ»»ÅäÖÃ
+	g_Api_Groups = std::move(new_groups);  // åŸå­æ€§æ›¿æ¢é…ç½®
 
 	return true;
 }

@@ -318,6 +318,8 @@ if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevSe
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ApiGroup.h" />
+    <ClInclude Include="ApiManageWin.h" />
+    <ClInclude Include="CheckboxCache.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="OptionsDialog.h" />
     <ClInclude Include="plugin.h" />
@@ -328,6 +330,8 @@ if exist "$(SolutionDir)Dev\PluginDevServer.exe" ("$(SolutionDir)Dev\PluginDevSe
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApiGroups.cpp" />
+    <ClCompile Include="ApiManageWin.cpp" />
+    <ClCompile Include="CheckboxCache.cpp" />
     <ClCompile Include="DefaultApiGroups.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="plugin.cpp" />

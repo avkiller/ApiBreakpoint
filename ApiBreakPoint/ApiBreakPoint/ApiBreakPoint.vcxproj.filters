@@ -39,6 +39,12 @@
     <ClInclude Include="ApiGroup.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ApiManageWin.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CheckboxCache.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="plugin.cpp">
@@ -60,6 +66,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DefaultApiGroups.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ApiManageWin.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CheckboxCache.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
