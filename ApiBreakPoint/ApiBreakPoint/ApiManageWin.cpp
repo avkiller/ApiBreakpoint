@@ -627,8 +627,8 @@ void AdjustLayout(HWND hwnd) {
 	const auto& checkBoxes = g_tabChecks[CurTab];
 
 	for (size_t i = 0; i < checkBoxes.size(); i++) {
-		int col = i % CHECKBOX_COLUMNS;
-		int row = i / CHECKBOX_COLUMNS;
+		int  col = static_cast<int>(i % CHECKBOX_COLUMNS);
+		int  row = static_cast<int>(i / CHECKBOX_COLUMNS);
 		int x = margin + col * (checkWidth + margin);
 		int y = tabHeight + margin + row * (checkHeight + margin);
 
