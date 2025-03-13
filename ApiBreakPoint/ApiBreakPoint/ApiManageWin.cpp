@@ -442,6 +442,8 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 		}
 		Polyline(hDC, dynamicPoints, 3);
 		SelectObject(hDC, hOldPen);
+
+		SetTextColor(hDC, RGB(0, 0, 255));
 	}
 
 	// 文本布局计算
@@ -462,7 +464,6 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 	rcDll.left = rcText.left + textMargin;
 	//  绘制DLL名称（左对齐）
 	if (!dllName.empty()) {
-		//DrawTextW(hDC, dllName.c_str(), -1, &rcDll, DT_CALCRECT); // 计算文本尺寸
 		CacheValue apiCache = g_textCache.GetTextLayout(hDC, dllName, font, 0, 0);
 		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
@@ -491,11 +492,10 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 
 	RECT rcDesc = rcText;
 	rcDesc.left = rcApi.right + textMargin;
-	// 9.3 绘制描述信息（右对齐）
+	// 绘制描述信息（右对齐）
 	if (!description.empty()) {
 		CacheValue apiCache = g_textCache.GetTextLayout(hDC, description, font, 0, 0);
 		rcDesc.right = rcDesc.left + apiCache.size.cx;
-		//DrawTextW(hDC, description.c_str(), -1, &rcDesc, DT_RIGHT | DT_SINGLELINE | DT_END_ELLIPSIS);
 		if (rcDesc.right < rcText.right) {
 			DrawTextW(hDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
 		}
@@ -516,9 +516,18 @@ void CreateTabs(TCITEMW& ti, HWND& hwnd)
 		_plugin_logprintf("failed：Parent Window handdle invalid\n");
 		return;
 	}
-
+	SendMessageW(hwnd, WM_SETREDRAW, FALSE, 0);
 	g_tabChecks.clear();
+	g_checkboxMap.clear();
+
+	// 预计算总控件数以优化哈希表
+	size_t totalChecks = 0;
+	for (const auto& group : g_Api_Groups) {
+		totalChecks += group.apiList.size();
+	}
+	g_checkboxMap.reserve(totalChecks); 
 	g_tabChecks.reserve(g_Api_Groups.size());
+
 	for (size_t tabIdx = 0; tabIdx < g_Api_Groups.size(); tabIdx++)
 	{
 		if (g_Api_Groups[tabIdx].groupName.empty()) {
@@ -526,7 +535,7 @@ void CreateTabs(TCITEMW& ti, HWND& hwnd)
 			continue;
 		}
 		ti.mask = TCIF_TEXT;
-		ti.pszText = (LPWSTR)g_Api_Groups[tabIdx].groupName.c_str();
+		ti.pszText = const_cast<LPWSTR>(g_Api_Groups[tabIdx].groupName.c_str());
 		TabCtrl_InsertItem(hTabControl, tabIdx, &ti);
 
 		size_t checkCount = g_Api_Groups[tabIdx].apiList.size();
@@ -544,7 +553,7 @@ void CreateTabs(TCITEMW& ti, HWND& hwnd)
 			HWND hCheck = CreateWindowW(
 				L"BUTTON",
 				WC_BUTTON,
-				WS_CHILD | WS_VISIBLE | BS_MULTILINE | BS_OWNERDRAW,
+				WS_CHILD | BS_MULTILINE | BS_OWNERDRAW,
 				0, 0, 0, 0,
 				hwnd,
 				reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CHECK_FIRST + (tabIdx * MAX_CHECKS_PER_TAB) + chkIdx)),
@@ -556,14 +565,31 @@ void CreateTabs(TCITEMW& ti, HWND& hwnd)
 
 			if (hCheck) {
 				SendMessageW(hCheck, WM_SETFONT, (WPARAM)g_dpi.font, TRUE);
-				g_checkboxMap[hCheck] = std::make_pair(tabIdx, chkIdx);
+				g_checkboxMap.emplace(hCheck, std::make_pair(tabIdx, chkIdx));
 				Hchecks.push_back(hCheck);
 			}
 
 		}
-		g_tabChecks.push_back(Hchecks);
+		g_tabChecks.push_back(std::move(Hchecks));
 
 	}
+	SendMessageW(hwnd, WM_SETREDRAW, TRUE, 0);
+	RedrawWindow(hwnd, nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+
+
+	int selectedTab = TabCtrl_GetCurSel(hTabControl);
+	if (selectedTab == -1 && !g_Api_Groups.empty()) {
+		selectedTab = 0;
+		TabCtrl_SetCurSel(hTabControl, 0);
+	}
+	for (size_t i = 0; i < g_tabChecks.size(); ++i) {
+		bool isVisible = (i == static_cast<size_t>(selectedTab));
+		for (HWND hCheck : g_tabChecks[i]) {
+			ShowWindow(hCheck, isVisible ? SW_SHOW : SW_HIDE);
+		}
+	}
+
+
 }
 
 // 布局调整
