@@ -1,16 +1,9 @@
 ﻿#pragma once
-
-
-
-
-
+#include "ApiGroup.h"
 DWORD WINAPI MsgLoopThread(LPVOID);
 LRESULT CALLBACK ApiBreakPointManageWndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-
 void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointInfo& apiInfo);
-
 void CreateTabs(TCITEMW& ti, HWND& hwnd);
-
 void UpdateCheckBoxs();
 void RecreateFont();
 void CleanupBreakpoints();

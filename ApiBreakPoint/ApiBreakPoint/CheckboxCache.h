@@ -10,9 +10,9 @@ struct CheckboxCache {
     int fontHeight = 16;
     int margin = 0;
     int penWidth = 0;
-    int charWidth_;
-    bool isMonospace;
-    POINT checkPoints[3];
+    int charWidth_ = 0;
+    bool isMonospace = false;
+    POINT checkPoints[3] = {0};
 
     // GDI 资源
     HBRUSH bgBrush = nullptr;
@@ -32,32 +32,39 @@ struct CheckboxCache {
     void UpdateFontMetrics(HDC hdc);
     void Cleanup();
     int CalculateTextWidth(HDC hdc, const std::wstring& text);
-    SIZE GetSmartTextExtent(HDC hdc, const std::wstring& text);
 };
 
 struct CacheKey {
-    std::wstring text;   // 文本内容（等宽字体时可为空）
-    HFONT font;           // 字体句柄
-    int dpiX;            // 水平DPI
-    size_t length;       // 文本长度（等宽字体时使用）
+    std::wstring text;
+    HFONT font;
+    int dpiX;
+    UINT format;
+    int maxWidth;
 
-    bool operator==(const CacheKey& other) const {
-        return text == other.text && font == other.font &&
-            dpiX == other.dpiX && length == other.length;
-    }
+    bool operator==(const CacheKey& other) const;
+};
+
+struct CacheValue {
+    RECT calcRect;  // 计算后的矩形（包含 left/right/top/bottom）
+    SIZE size;      // 等效尺寸（cx = right - left, cy = bottom - top）
 };
 
 
-// 哈希函数特化
 namespace std {
     template<> struct hash<CacheKey> {
-        size_t operator()(const CacheKey& key) const {
-            return hash<std::wstring>()(key.text) ^
-                hash<HFONT>()(key.font) ^
-                hash<int>()(key.dpiX) ^
-                hash<size_t>()(key.length);
-        }
+        size_t operator()(const CacheKey& key) const;
     };
 }
 
-extern  std::unordered_map<CacheKey, SIZE> g_textSizeCache;
+
+class TextLayoutCache {
+private:
+    std::unordered_map<CacheKey, CacheValue> g_cache;
+    std::list<CacheKey> m_lruList;
+    const size_t m_maxSize;
+
+public:
+    explicit TextLayoutCache(size_t maxSize = 1000);
+    CacheValue GetTextLayout(HDC hdc, const std::wstring& text, HFONT font, UINT format, int maxWidth);
+    void Clear();
+};

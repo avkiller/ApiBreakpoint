@@ -4,7 +4,7 @@ set batdir=%~dp0
 echo %batdir%
 if exist %batdir%\ApiBreakPoint.dp32 (
     ECHO "hello"
-    COPY /Y %batdir%\ApiBreakPoint.ini %x64dbgdir%\x32\plugins\ 
+    REM COPY /Y %batdir%\ApiBreakPoint.ini %x64dbgdir%\x32\plugins\ 
 	COPY /Y %batdir%\ApiBreakPoint.dp32 %x64dbgdir%\x32\plugins\ 
 	if errorlevel 1 (
         echo "Copy ApiBreakPoint.dp32 failed"

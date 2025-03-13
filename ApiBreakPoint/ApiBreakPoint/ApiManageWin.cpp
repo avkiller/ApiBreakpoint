@@ -5,6 +5,7 @@
 
 namespace {
 	CheckboxCache s_cache; // 匿名命名空间限制作用域
+	TextLayoutCache g_textCache;
 }
 
 // make sure only one window exists
@@ -347,6 +348,8 @@ LRESULT CALLBACK ApiBreakPointManageWndProc(HWND hwnd, UINT iMsg, WPARAM wParam,
 		if (g_settings.opts().closeClearBreakPoint) {
 			CleanupBreakpoints();
 		}
+		g_textCache.Clear();
+		s_cache.Cleanup();
 		PostQuitMessage(0);
 		return 0;
 	case WM_DPICHANGED:
@@ -405,6 +408,7 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 	if (s_cache.lastBkMode != TRANSPARENT) {
 		SetBkMode(hDC, s_cache.lastBkMode = TRANSPARENT);
 	}
+	HFONT font = s_cache.currentFont;
 
 	// 计算复选框位置
 	RECT rcCheck;
@@ -458,7 +462,9 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 	rcDll.left = rcText.left + textMargin;
 	//  绘制DLL名称（左对齐）
 	if (!dllName.empty()) {
-		DrawTextW(hDC, dllName.c_str(), -1, &rcDll, DT_CALCRECT); // 计算文本尺寸
+		//DrawTextW(hDC, dllName.c_str(), -1, &rcDll, DT_CALCRECT); // 计算文本尺寸
+		CacheValue apiCache = g_textCache.GetTextLayout(hDC, dllName, font, 0, 0);
+		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
 		rcDll.bottom = rcText.bottom;
 		DrawTextW(hDC, dllName.c_str(), -1, &rcDll, DT_LEFT | textFlags);
@@ -472,9 +478,8 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 	RECT rcApi = rcText;
 	rcApi.left = rcDll.right + textMargin;
 	if (!apiName.empty()) {
-		/*int api_Width = s_cache.GetSmartTextExtent(hDC, apiName).cx;
-		remainingSpace -= api_Width;*/
-		DrawTextW(hDC, apiName.c_str(), -1, &rcApi, DT_CALCRECT);
+		CacheValue apiCache = g_textCache.GetTextLayout(hDC, apiName, font, 0, 0);
+		rcApi.right = rcApi.left + apiCache.size.cx;
 		rcApi.top = rcText.top;
 		rcApi.bottom = rcText.bottom;
 		DrawTextW(hDC, apiName.c_str(), -1, &rcApi, DT_LEFT | textFlags);
@@ -488,7 +493,8 @@ void DrawCheckbox(HWND hButton, LPDRAWITEMSTRUCT pDrawItem, const ApiBreakPointI
 	rcDesc.left = rcApi.right + textMargin;
 	// 9.3 绘制描述信息（右对齐）
 	if (!description.empty()) {
-		DrawTextW(hDC, description.c_str(), -1, &rcDesc, DT_CALCRECT);
+		CacheValue apiCache = g_textCache.GetTextLayout(hDC, description, font, 0, 0);
+		rcDesc.right = rcDesc.left + apiCache.size.cx;
 		//DrawTextW(hDC, description.c_str(), -1, &rcDesc, DT_RIGHT | DT_SINGLELINE | DT_END_ELLIPSIS);
 		if (rcDesc.right < rcText.right) {
 			DrawTextW(hDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);

@@ -148,6 +148,9 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENT
 	default: {
 		auto profile_name = g_settings.profile_names()[info->hEntry - MENU_MAX].c_str();
 		g_settings.SetProfile(profile_name);
+
+		g_api_BreakPointConfigPath = g_PluginDir + g_settings.opts().apiGroupFileName;
+		ReloadApiGroupsFromJson(g_api_BreakPointConfigPath);
 		break;
 	}
 

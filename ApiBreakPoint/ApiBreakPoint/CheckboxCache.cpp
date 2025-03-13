@@ -1,5 +1,5 @@
 ﻿#include "CheckboxCache.h"
-//#include "ApiGroup.h"
+#include "plugin.h"
 std::unordered_map<CacheKey, SIZE> g_textSizeCache;
 
 void CheckboxCache::UpdateDpiResources(int currentDpi) {
@@ -54,43 +54,75 @@ int CheckboxCache::CalculateTextWidth(HDC hdc, const std::wstring& text)
 }
 
 
-SIZE CheckboxCache::GetSmartTextExtent(HDC hdc, const std::wstring& text) {
-    // 获取 DPI 和字体类型
-    const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-    const int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+// CacheKey 的 operator== 实现
+bool CacheKey::operator==(const CacheKey& other) const {
+    return text == other.text && font == other.font &&
+        dpiX == other.dpiX && format == other.format &&
+        maxWidth == other.maxWidth;
+}
 
-    // 构造缓存键
-    CacheKey key;
-    key.font = currentFont;
-    key.dpiX = dpiX;
-    key.length = text.length();
-    if (!isMonospace) {
-        key.text = text; // 非等宽字体需存储完整文本
+// std::hash 特化实现
+namespace std {
+    size_t hash<CacheKey>::operator()(const CacheKey& key) const {
+        return hash<wstring>()(key.text) ^ hash<HFONT>()(key.font) ^
+            hash<int>()(key.dpiX) ^ hash<UINT>()(key.format) ^
+            hash<int>()(key.maxWidth);
     }
+}
 
-    // 查询缓存
-    auto it = g_textSizeCache.find(key);
-    if (it != g_textSizeCache.end()) {
+
+// TextLayoutCache 成员函数实现
+TextLayoutCache::TextLayoutCache(size_t maxSize) : m_maxSize(maxSize) {}
+
+CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, HFONT font, UINT format, int maxWidth) {
+    const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+    CacheKey key{ text, font, dpiX, format, maxWidth };
+
+    // LRU 缓存查询
+    auto it = g_cache.find(key);
+    if (it != g_cache.end()) {
+        m_lruList.remove(key);
+        m_lruList.push_front(key);
         return it->second;
     }
 
-    // 缓存未命中，计算尺寸
-    SIZE size = { 0, 0 };
-    if (isMonospace) {
-        // 等宽优化：字符数 × 平均宽度
-        size.cx = static_cast<int>(text.length() * textMetric.tmAveCharWidth);
-        size.cy = textMetric.tmHeight;
+
+    // 缓存未命中，计算 RECT 和 SIZE
+    CacheValue result{};
+    RECT rc = { 0, 0, maxWidth, 0 }; // 初始宽度为 maxWidth，高度自动扩展
+    DrawTextW(hdc, text.c_str(), -1, &rc, format | DT_CALCRECT);
+
+    // 转换为物理像素（若需要）
+    if (dpiX!= g_dpi.current) {
+        result.calcRect = {
+       MulDiv(rc.left,   dpiX, 96),
+       MulDiv(rc.top,    dpiX, 96),
+       MulDiv(rc.right,  dpiX, 96),
+       MulDiv(rc.bottom, dpiX, 96)
+        };
     }
     else {
-        // 非等宽：精确计算
-        GetTextExtentPoint32W(hdc, text.c_str(), text.length(), &size);
+        result.calcRect = { rc.left,rc.top, rc.right, rc.bottom};
     }
+   
+    result.size = {
+        result.calcRect.right - result.calcRect.left,
+        result.calcRect.bottom - result.calcRect.top
+    };
 
-    // DPI 缩放
-    size.cx = MulDiv(size.cx, dpiX, 96);
-    size.cy = MulDiv(size.cy, dpiY, 96);
 
-    // 写入缓存
-    g_textSizeCache[key] = size;
-    return size;
+    // 更新缓存
+    if (g_cache.size() >= m_maxSize) {
+        g_cache.erase(m_lruList.back());
+        m_lruList.pop_back();
+    }
+    g_cache[key] = result;
+    m_lruList.push_front(key);
+
+    return result;
+}
+
+void TextLayoutCache::Clear() {
+    g_cache.clear();
+    m_lruList.clear();
 }
