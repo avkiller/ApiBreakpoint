@@ -1,8 +1,5 @@
-﻿#include "plugin.h"
-#include "ApiGroup.h"
+﻿
 #include "ApiManageWin.h"
-#include "CheckboxCache.h"
-#include <ShellScalingApi.h>
 
 namespace {
 	constexpr int MAINWINDOW_WIDTH = 800;
@@ -43,6 +40,93 @@ void ApiBreakpointManager::Initialize() {
 	m_dpi.scaling = m_dpi.current / 96.0f;
 	RecreateFonts();
 	InitCommonControls();
+}
+
+void ApiBreakpointManager::InitTooltip() {
+	m_hTooltip = CreateWindowEx(
+		WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
+		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		m_hMainWnd, nullptr, GetModuleHandle(nullptr), nullptr
+	);
+}
+
+LRESULT CALLBACK ApiBreakpointManager::TooltipProc(
+	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+	// 通过 dwRefData 获取类实例
+	if (auto pThis = reinterpret_cast<ApiBreakpointManager*>(dwRefData)) {
+		return pThis->HandleMsgTooltip(
+			hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData
+		);
+	}
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+LRESULT ApiBreakpointManager::HandleMsgTooltip(HWND hwnd, UINT uMsg,WPARAM wParam, 
+	LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+	static bool trackingMouseLeave = false;
+	switch (uMsg) {
+	    case WM_NCDESTROY:
+			RemoveWindowSubclass(hwnd, TooltipProc, uIdSubclass);
+			break;
+
+		case WM_MOUSEMOVE: {
+			auto it = m_TruncatedInfos.find(hwnd);
+			if (it != m_TruncatedInfos.end()) {
+
+				
+				POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+				//ClientToScreen(hwnd, &pt);
+
+				if (PtInRect(&it->second.rcTruncated, pt)) {
+
+					ClientToScreen(hwnd, &pt);
+
+					TOOLINFO ti = { sizeof(TOOLINFO) };
+					ti.hwnd = hwnd;
+					ti.uId = 1;
+					ti.lpszText = (LPWSTR)it->second.fullText.c_str();
+
+					if (!SendMessage(m_hTooltip, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+						SendMessage(m_hTooltip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+					}
+
+					SendMessage(m_hTooltip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
+					SendMessage(m_hTooltip, TTM_TRACKPOSITION, 0, MAKELPARAM(pt.x + 16, pt.y));
+
+					if (!trackingMouseLeave) {
+						TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT) };
+						tme.dwFlags = TME_LEAVE;
+						tme.hwndTrack = hwnd;
+						TrackMouseEvent(&tme);
+						trackingMouseLeave = true;
+					}
+				}	
+			}
+
+			break;
+
+		}
+
+		case WM_MOUSELEAVE: {
+			// 关闭 Tooltip
+			TOOLINFO ti = { sizeof(TOOLINFO) };
+			ti.hwnd = hwnd;
+			ti.uId = 1;
+			SendMessage(m_hTooltip, TTM_TRACKACTIVATE, FALSE, (LPARAM)&ti);
+			trackingMouseLeave = false;
+			break;
+		}
+
+		case WM_DESTROY: {
+			// 清理资源
+			RemoveWindowSubclass(hwnd, TooltipProc, uIdSubclass);
+			break;
+		}
+	
+	}
+	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
 void ApiBreakpointManager::ShowMainWindow() {
@@ -196,6 +280,7 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	switch (msg) {
 	case WM_CREATE:
 		Initialize();
+		InitTooltip();
 		return 0;
 
 	case WM_SIZE:
@@ -235,7 +320,6 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 			reinterpret_cast<DRAWITEMSTRUCT*>(lParam));
 		return TRUE;
 	}
-	
 
 	case WM_DESTROY:
 		Cleanup();
@@ -311,10 +395,18 @@ void ApiBreakpointManager::CreateTabContent(int tabIndex) {
 			//nullptr,
 			reinterpret_cast<HMENU>(static_cast<UINT_PTR>(IDC_CHECK_FIRST + (tabIndex * MAX_CHECKS_PER_TAB) + chkIdx)),
 			g_hInstance, nullptr);
+
+		SetWindowSubclass(
+			hCheck,
+			&ApiBreakpointManager::TooltipProc,
+			0,
+			reinterpret_cast<DWORD_PTR>(this)
+		);
+
 		if (hCheck) {
 			SendMessage(hCheck, WM_SETFONT, (WPARAM)m_dpi.font, TRUE);
 			Hcheckboxes.push_back(std::move(hCheck));
-			m_checkboxMap.emplace(hCheck, std::make_pair(tabIndex, chkIdx));
+			m_checkboxMap.emplace(hCheck, std::make_pair(tabIndex, static_cast<int>(chkIdx)));
 		}
 	
 		
@@ -338,13 +430,26 @@ void ApiBreakpointManager::UpdateCheckboxes(int tabIndex) {
 }
 
 LRESULT ApiBreakpointManager::HandleNotify(NMHDR* pHdr) {
+	if (pHdr->code == TTN_GETDISPINFO) {
+		NMTTDISPINFO* pInfo = reinterpret_cast<NMTTDISPINFO*>(pHdr);
+		auto it = m_TruncatedInfos.find(pInfo->hdr.hwndFrom);
+		if (it != m_TruncatedInfos.end()) {
+			pInfo->lpszText = const_cast<LPWSTR>(it->second.fullText.c_str());
+		}
+		return 0;
+	}
+
 	if (pHdr->idFrom != IDC_TABCTRL)
 		return 0;
+
 	switch (pHdr->code) {
-	case TCN_SELCHANGE:
-		OnTabChanged();
-		return TRUE;
+		case TCN_SELCHANGE:
+			OnTabChanged();
+			return TRUE;
+
 	}
+	
+
 	return DefWindowProc(m_hMainWnd, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pHdr));
 	//return 0;
 }
@@ -389,27 +494,8 @@ void ApiBreakpointManager::SwitchTabContent(int oldTabIndex, int newTabIndex) {
 
 	// 更新当前选项卡索引
 	m_currentTab = newTabIndex;
-
-	//// 修改异步调用部分
-	//const int preloadIndex = newTabIndex + 1;
-	//if (preloadIndex < static_cast<int>(m_tabs.size()) && m_tabs[preloadIndex].checkboxes.empty())
-	//{
-	//	// 正确捕获 future 并处理异常
-	//	auto fut = std::async(std::launch::async, [this, preloadIndex] {
-	//		try {
-	//			CreateTabContent(preloadIndex);
-	//		}
-	//		catch (const std::exception& e) {
-	//			_plugin_logprintf("[异常] 预加载失败: %s\n", e.what());
-	//		}
-	//	});
-
-	//	// 可选：将 future 存入成员变量管理
-	//	m_asyncFutures.push_back(std::move(fut));
-	//}
 	// 强制重绘防止残留
-	RedrawWindow(m_hTabCtrl, nullptr, nullptr,
-		RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW);
+	RedrawWindow(m_hTabCtrl, nullptr, nullptr,RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW);
 }
 
 void ApiBreakpointManager::HandleButtonClick(HWND hButton) {
@@ -458,7 +544,7 @@ void ApiBreakpointManager::ToggleBreakpoint(HWND hButton, ApiBreakPointInfo& api
 void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 {
 	const auto& [tabIndex, itemIndex] = m_checkboxMap[hWnd];
-	const auto& apiInfo = g_Api_Groups[tabIndex].apiList[itemIndex];
+	auto& apiInfo = g_Api_Groups[tabIndex].apiList[itemIndex];
 	HDC hDC = pDrawItem->hDC;
 	// 更新 DPI 资源
 	ApiBreakpointManager::m_checkboxCache.UpdateDpiResources(m_dpi.current);
@@ -576,6 +662,20 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 		else {
 			rcText.left = rcApi.right + textMargin;
 			DrawTextW(hDC, description.c_str(), -1, &rcText, DT_LEFT | DT_SINGLELINE| DT_VCENTER | DT_END_ELLIPSIS);
+
+			const int requiredWidth = apiCache.size.cx;
+			const int availableWidth = rcText.right - rcText.left;
+			if (requiredWidth > availableWidth) {
+				/*_plugin_logprintf*/("ELLIPSIS str %s", description);
+				m_TruncatedInfos.emplace(
+					hWnd,
+					TruncatedCheckboxInfo(rcText, description)
+				);
+
+			}
+
+			
+
 		
 		}
 		

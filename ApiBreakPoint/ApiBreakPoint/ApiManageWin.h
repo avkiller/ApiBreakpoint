@@ -1,11 +1,18 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <windowsx.h>
+#include <commctrl.h>
+#include <ShellScalingApi.h>
 #include <vector>
 #include <unordered_map>
 #include <list>
 #include <future>
 #include "ApiGroup.h"
 #include "CheckboxCache.h"
+#include "plugin.h"
+
+#pragma comment(lib, "comctl32.lib")
+
 
 class ApiBreakpointManager {
 public:
@@ -54,8 +61,15 @@ private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+    static LRESULT CALLBACK TooltipProc(
+        HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+        UINT_PTR uIdSubclass, DWORD_PTR dwRefData
+    );
+    LRESULT HandleMsgTooltip(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,UINT_PTR uIdSubclass, DWORD_PTR dwRefData );
+
     // 功能方法
     void Initialize();
+    void InitTooltip();
     void CreateTabControl();
     void CreateTabs();
     void CreateTabContent(int tabIndex);
@@ -77,13 +91,20 @@ private:
     // 窗口相关
     HWND m_hMainWnd = nullptr;
     HWND m_hTabCtrl = nullptr;
+    HWND m_hTooltip = nullptr;
     int m_currentTab = 0;
     DpiState m_dpi;
     UINT GetCurrentDPI();
 
+    struct TruncatedCheckboxInfo {
+        RECT rcTruncated{0, 0, 0, 0};       // 截断区域坐标
+        std::wstring fullText;  // 完整描述文本
+    };
+
     // 资源管理
     std::vector<TabContext> m_tabChecks;
-    std::unordered_map<HWND, std::pair<int, int>> m_checkboxMap; // <HWND, <tabIndex, itemIndex>>
+    std::unordered_map<HWND, std::pair<int, int>> m_checkboxMap;// <HWND, <tabIndex, itemIndex>>
+    std::map<HWND, TruncatedCheckboxInfo> m_TruncatedInfos;
     CheckboxCache m_checkboxCache;
     TextLayoutCache m_textCache;
 

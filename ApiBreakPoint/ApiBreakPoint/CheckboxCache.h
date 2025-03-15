@@ -3,6 +3,21 @@
 #include <string>
 #include <unordered_map>
 
+struct CacheKey {
+    std::wstring text;
+    HFONT font;
+    int dpiX;
+    UINT format;
+    int maxWidth;
+
+    bool operator==(const CacheKey& other) const;
+};
+
+struct CacheValue {
+    RECT calcRect;  // 计算后的矩形（包含 left/right/top/bottom）
+    SIZE size;      // 等效尺寸（cx = right - left, cy = bottom - top）
+};
+
 struct CheckboxCache {
     // DPI 相关
     int dpi = 0;
@@ -12,7 +27,8 @@ struct CheckboxCache {
     int penWidth = 0;
     int charWidth_ = 0;
     bool isMonospace = false;
-    POINT checkPoints[3] = {0};
+    //CacheValue CacheRect;
+    POINT checkPoints[3] = { 0 };
 
     // GDI 资源
     HBRUSH bgBrush = nullptr;
@@ -32,21 +48,6 @@ struct CheckboxCache {
     void UpdateFontMetrics(HDC hdc);
     void Cleanup();
     int CalculateTextWidth(HDC hdc, const std::wstring& text);
-};
-
-struct CacheKey {
-    std::wstring text;
-    HFONT font;
-    int dpiX;
-    UINT format;
-    int maxWidth;
-
-    bool operator==(const CacheKey& other) const;
-};
-
-struct CacheValue {
-    RECT calcRect;  // 计算后的矩形（包含 left/right/top/bottom）
-    SIZE size;      // 等效尺寸（cx = right - left, cy = bottom - top）
 };
 
 
