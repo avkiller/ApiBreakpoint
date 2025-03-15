@@ -1,5 +1,6 @@
 ﻿#include "CheckboxCache.h"
 #include "plugin.h"
+#include "ApiManageWin.h"
 std::unordered_map<CacheKey, SIZE> g_textSizeCache;
 
 void CheckboxCache::UpdateDpiResources(int currentDpi) {
@@ -75,7 +76,11 @@ namespace std {
 TextLayoutCache::TextLayoutCache(size_t maxSize) : m_maxSize(maxSize) {}
 
 CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, HFONT font, UINT format, int maxWidth) {
+
+    auto& manager = ApiBreakpointManager::GetInstance();
+    const int m_dpi = manager.GetApiWinDPI();
     const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+   
     CacheKey key{ text, font, dpiX, format, maxWidth };
 
     // LRU 缓存查询
@@ -93,7 +98,7 @@ CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, HFO
     DrawTextW(hdc, text.c_str(), -1, &rc, format | DT_CALCRECT);
 
     // 转换为物理像素（若需要）
-    if (dpiX!= g_dpi.current) {
+    if (dpiX!= m_dpi) {
         result.calcRect = {
        MulDiv(rc.left,   dpiX, 96),
        MulDiv(rc.top,    dpiX, 96),

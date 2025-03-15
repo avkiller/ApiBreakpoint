@@ -33,7 +33,7 @@ bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
 	HRESULT hr = SetProcessDpiAwareness(PROCESS_DPI_AWARENESS::PROCESS_PER_MONITOR_DPI_AWARE);
 	if (FAILED(hr))
-		_plugin_logprintf("SetProcessDpiAwareness failed with error\n");
+		_plugin_logprintf("[+] ApiBreakpoint: SetProcessDpiAwareness failed with error\n");
 	return true; //Return false to cancel loading the plugin.
 }
 
@@ -107,28 +107,10 @@ extern "C" __declspec(dllexport) void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENT
 	{
 	case MENU_MAINWINDOW_POPUP:
 	{
-		if (!bIsMainWindowShow && DbgIsDebugging())
-		{
-			HANDLE hThread = CreateThread(
-				NULL,                   // 安全属性
-				0,                      // 默认堆栈大小
-				MsgLoopThread,          // 线程函数
-				NULL,                   // 参数
-				0,                      // 创建标志
-				NULL                    // 线程ID
-			);
+		auto& manager = ApiBreakpointManager::GetInstance();
 
-			if (hThread != NULL)
-			{
-				// 线程创建成功，可以关闭句柄（如果不需后续操作）
-				CloseHandle(hThread);
-				bIsMainWindowShow = true;
-			}
-			else
-			{
-				// 处理线程创建失败的情况
-				_plugin_logprintf("Failed to create thread %s \n", MB_ICONERROR);
-			}
+		if (!manager.IsWindowCreated()) {
+			manager.ShowMainWindow(); // 首次创建窗口
 		}
 		break;
 	}

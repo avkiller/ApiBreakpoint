@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "pluginmain.h"
 #include <Windows.h>
@@ -17,31 +17,12 @@ using namespace Script::Symbol;
 using namespace Script::Debug;
 using namespace Script::Register;
 
-#define IDC_TABCTRL 1500
-#define IDC_CHECK_FIRST 1500
-#define MAX_CHECKS_PER_TAB 100
 
 //functions
 bool pluginInit(PLUG_INITSTRUCT* initStruct);
 void pluginStop();
 void pluginSetup();
 
-
-#define MAINWINDOW_WIDTH 800
-#define MAINWINDOW_HEIGHT 600
-#define CHECKBOX_COLUMNS         3
-#define TAB_HEIGHT               35
-#define CHECKBOX_HEIGHT          25
-#define MARGIN_SIZE              10
-
-// ȫ��DPI״̬
-struct DpiState {
-	int current = 96;
-	float scaling = 1.0f;
-	HFONT font = nullptr;
-	HFONT tabfont = nullptr;
-};
-extern DpiState g_dpi;
 
 enum ApiBreakPointMenuItems : int {
 	MENU_OPTIONS = 0,

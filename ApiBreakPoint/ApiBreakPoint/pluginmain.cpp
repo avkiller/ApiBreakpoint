@@ -1,4 +1,4 @@
-#include "pluginmain.h"
+﻿#include "pluginmain.h"
 #include "plugin.h"
 
 
@@ -14,7 +14,7 @@ HINSTANCE g_hInstance;
 PLUG_EXPORT bool pluginit(PLUG_INITSTRUCT* initStruct)
 {
     //_plugin_logprintf("Plugin name %s \n", PLUGIN_NAME);
-    initStruct->pluginVersion = (API_BREAKPOINT_VERSION_MAJOR * 10) + (API_BREAKPOINT_VERSION_MINOR * 1);
+    initStruct->pluginVersion = (API_BREAKPOINT_VERSION_MAJOR * 100) + (API_BREAKPOINT_VERSION_MINOR * 10) + API_BREAKPOINT_VERSION_PATCH;
     initStruct->sdkVersion = PLUG_SDKVERSION;
     //wcsncpy_s(initStruct->pluginName, PLUGIN_NAME_MAX_LEN, PLUGIN_NAME, _TRUNCATE);
     strncpy_s(initStruct->pluginName, PLUGIN_NAME_MAX_LEN, PLUGIN_NAME, _TRUNCATE);

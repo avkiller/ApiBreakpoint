@@ -157,7 +157,7 @@
 if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" reload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32")</Command>
+      <Command>if exist "$(SolutionDir)Dev\PluginDevBuildTool.exe" ("$(SolutionDir)Dev\PluginDevBuildTool.exe" unload "d:\Analyze\DebugTools\x64dbg\x32\plugins\ApiBreakPoint.dp32" 2&gt;nul|| ver &gt;nul)</Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

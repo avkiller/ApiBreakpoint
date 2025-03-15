@@ -4,11 +4,16 @@
 #include <string>
 #include <iterator>
 #include <Windows.h>
+#include <filesystem>
 
-#include "json.hpp"
+#pragma warning(push)
+#pragma warning(disable: 4244)
+#include "json.hpp" 
+#pragma warning(pop)
+
 #include "ApiGroup.h"
 #include "Util.h"
-#include <filesystem>
+
 
 using namespace std;
 using json = nlohmann::json;

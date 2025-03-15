@@ -1,6 +1,6 @@
 [
   {
-    "groupName": "样本调试",
+    "groupName": "tab1",
     "apiList": [
       {
         "dllName": "1",
@@ -17,6 +17,53 @@
         "apiName": "test3_3456789eeeeettwtwtte",
         "description": "case3中国人额外各位我为何射射深色"
       }
+    ]
+  },
+  {
+    "groupName": "tab2",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "创建文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "LoadLibraryA",
+        "description": "加载dll"
+      }
+      
+    ]
+  },
+  {
+    "groupName": "tab3",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateFileA",
+        "description": "创建或打开文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "OpenFile",
+        "description": "打开文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "ReadFile",
+        "description": "读文件"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteFile",
+        "description": "写文件"
+      }
+      
     ]
   }
 ]

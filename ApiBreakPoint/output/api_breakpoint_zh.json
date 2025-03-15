@@ -539,6 +539,21 @@
       },
       {
         "dllName": "",
+        "apiName": "NtCreateThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtResumeThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlCreateUserThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
         "apiName": "WriteProcessMemory",
         "description": ""
       },
@@ -546,7 +561,118 @@
         "dllName": "",
         "apiName": "VirtualAllocEx",
         "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GetProcAddress",
+        "description": "检测HOOK"
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileMapping",
+        "description": "反射注入"
+      },
+      {
+        "dllName": "",
+        "apiName": "MapViewOfFile",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtMapViewOfFile",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtMapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "SignalObjectAndWait",
+        "description": "APC注入"
+      },
+      {
+        "dllName": "",
+        "apiName": "MsgWaitForMultipleObjectsEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WaitForMultipleObjectsEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "WaitForSingleObjectEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "QueueUserAPC",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "KeInitializeAPC",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQueueApcThread",
+        "description": "APC注入变种"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtSetContextThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "GlobalGetAtomName",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtQueryProcessInformation",
+        "description": "傀儡进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtUnmapViewOfSection",
+        "description": "傀儡进程"
+      },
+      {
+        "dllName": "",
+        "apiName": "RollbackTransaction",
+        "description": "进程分身"
+      },
+      {
+        "dllName": "",
+        "apiName": "NtCreateThreadEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtCreateProcessEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateFileTransaction",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CreateTransaction",
+        "description": ""
       }
+     
     ]
   },
   {
@@ -2046,6 +2172,101 @@
         "dllName": "",
         "apiName": "FindFirstFileA",
         "description": "查找文件"
+      }
+    ]
+  },
+  {
+    "groupName": "恶意程序",
+    "apiList": [
+      {
+        "dllName": "",
+        "apiName": "CreateProcessInternalW",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualAlloc",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualAllocEx",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwProtectVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "VirtualProtect",
+        "description": "Vmp脱壳"
+      },
+      {
+        "dllName": "",
+        "apiName": "WriteProcessMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtWriteProcessMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ResumeThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtResumeThread",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "CryptDecrypt",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "RtlDecompressBuffer",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtCreateSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "MapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwMapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "UnmapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "ZwUnmapViewOfSection",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtWriteVirtualMemory",
+        "description": ""
+      },
+      {
+        "dllName": "",
+        "apiName": "NtReadVirtualMemory",
+        "description": ""
       }
     ]
   },
