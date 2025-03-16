@@ -1,12 +1,15 @@
 ﻿#pragma once
-#include <Windows.h>
-#include <windowsx.h>
-#include <commctrl.h>
-#include <ShellScalingApi.h>
 #include <vector>
 #include <unordered_map>
 #include <list>
 #include <future>
+#include <algorithm>
+
+#include <Windows.h>
+#include <windowsx.h>
+#include <commctrl.h>
+#include <ShellScalingApi.h>
+
 #include "ApiGroup.h"
 #include "CheckboxCache.h"
 #include "plugin.h"
@@ -78,6 +81,7 @@ private:
     void CenterWindow();
     void HandleButtonClick(HWND hButton);
     void ToggleBreakpoint(HWND hButton, ApiBreakPointInfo& apiInfo);
+    //void HandleScroll(HWND hWnd, WPARAM wParam);
 
     void RecreateFonts();
     void HandleDpiChange();
@@ -93,6 +97,8 @@ private:
     HWND m_hTabCtrl = nullptr;
     HWND m_hTooltip = nullptr;
     int m_currentTab = 0;
+    int m_currentScrollPos = 0;
+    int m_totalContentHeight = 0;
     DpiState m_dpi;
     UINT GetCurrentDPI();
 

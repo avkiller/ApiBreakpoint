@@ -42,6 +42,174 @@ void ApiBreakpointManager::Initialize() {
 	InitCommonControls();
 }
 
+void ApiBreakpointManager::CenterWindow() {
+	if (!m_hMainWnd) return;
+
+	// 获取父窗口（调试器主窗口）
+	HWND hParent = GetParent(m_hMainWnd);
+	if (!hParent) hParent = GetDesktopWindow();
+
+
+
+	// 获取窗口和父窗口的尺寸
+	RECT rcWindow, rcParent, rc;
+	GetWindowRect(m_hMainWnd, &rcWindow);
+	GetWindowRect(hParent, &rcParent);
+	CopyRect(&rc, &rcParent);
+
+	OffsetRect(&rcWindow, -rcWindow.left, -rcWindow.top);
+	OffsetRect(&rc, -rc.left, -rc.top);
+	OffsetRect(&rc, -rcWindow.right, -rcWindow.bottom);
+
+	SetWindowPos(m_hMainWnd,
+		HWND_TOP,
+		rcParent.left + (rc.right / 2),
+		rcParent.top + (rc.bottom / 2),
+		0, 0,          // Ignores size arguments. 
+		SWP_NOSIZE);
+}
+
+LRESULT CALLBACK ApiBreakpointManager::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	ApiBreakpointManager* pThis = nullptr;
+
+	if (msg == WM_NCCREATE) {
+		// 从创建参数获取实例指针
+		CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+		pThis = static_cast<ApiBreakpointManager*>(pCreate->lpCreateParams);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis));
+		pThis->m_hMainWnd = hwnd;
+	}
+	else {
+		pThis = reinterpret_cast<ApiBreakpointManager*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	}
+
+	if (pThis) {
+		return pThis->HandleMessage(hwnd, msg, wParam, lParam);
+	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch (msg) {
+	case WM_CREATE:
+		Initialize();
+		InitTooltip();
+		return 0;
+
+	case WM_SIZE:
+		AdjustLayout();
+		return 0;
+
+	case WM_DPICHANGED: {
+		m_dpi.current = LOWORD(wParam);
+		HandleDpiChange();
+		RECT* const rect = reinterpret_cast<RECT*>(lParam);
+		SetWindowPos(m_hMainWnd, nullptr,
+			rect->left, rect->top,
+			rect->right - rect->left,
+			rect->bottom - rect->top,
+			SWP_NOZORDER | SWP_NOACTIVATE);
+		return 0;
+	}
+
+	case WM_COMMAND:
+		if (HIWORD(wParam) == BN_CLICKED) {
+			HandleButtonClick(reinterpret_cast<HWND>(lParam));
+		}
+		return 0;
+
+	case WM_NOTIFY:
+		return HandleNotify(reinterpret_cast<NMHDR*>(lParam));
+
+	case WM_DRAWITEM: {
+		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
+		HWND hButton = pDrawItem->hwndItem;
+		// 检查是否是复选框
+		if (pDrawItem->CtlType != ODT_BUTTON)
+			return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
+
+		DrawCheckbox(
+			reinterpret_cast<HWND>(reinterpret_cast<DRAWITEMSTRUCT*>(lParam)->hwndItem),
+			reinterpret_cast<DRAWITEMSTRUCT*>(lParam));
+		return TRUE;
+	}
+
+	case WM_DESTROY:
+		Cleanup();
+		//PostQuitMessage(0);
+		return 0;
+
+	case WM_CLOSE:
+		DestroyWindow(m_hMainWnd); // 仅销毁当前窗口
+		return 0;
+
+	default:
+		break;
+	}
+	return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
+}
+
+void ApiBreakpointManager::ShowMainWindow() {
+	if (m_hMainWnd && IsWindowVisible(m_hMainWnd)) {
+		SetForegroundWindow(m_hMainWnd);
+		return;
+	}
+
+	m_hMainWnd = CreateWindowW(CLASS_NAME, L"API断点管理器",
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		MulDiv(MAINWINDOW_WIDTH, m_dpi.current, 96),
+		MulDiv(MAINWINDOW_HEIGHT, m_dpi.current, 96),
+		nullptr, nullptr, g_hInstance, this);
+
+	CreateTabControl();
+	::ShowWindow(m_hMainWnd, SW_SHOW);
+	CenterWindow();
+	UpdateWindow(m_hMainWnd);
+}
+
+void ApiBreakpointManager::HandleDpiChange() {
+	m_dpi.current = GetCurrentDPI();
+	m_dpi.scaling = m_dpi.current / 96.0f;
+	RecreateFonts();
+	CenterWindow();
+	AdjustLayout();
+}
+
+LRESULT ApiBreakpointManager::HandleNotify(NMHDR* pHdr) {
+	if (pHdr->code == TTN_GETDISPINFO) {
+		NMTTDISPINFO* pInfo = reinterpret_cast<NMTTDISPINFO*>(pHdr);
+		auto it = m_TruncatedInfos.find(pInfo->hdr.hwndFrom);
+		if (it != m_TruncatedInfos.end()) {
+			pInfo->lpszText = const_cast<LPWSTR>(it->second.fullText.c_str());
+		}
+		return 0;
+	}
+
+	if (pHdr->idFrom != IDC_TABCTRL)
+		return 0;
+
+	switch (pHdr->code) {
+	case TCN_SELCHANGE:
+		OnTabChanged();
+		return TRUE;
+
+	}
+
+
+	return DefWindowProc(m_hMainWnd, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pHdr));
+	//return 0;
+}
+
+void ApiBreakpointManager::HandleButtonClick(HWND hButton) {
+	auto it = m_checkboxMap.find(hButton);
+	if (it != m_checkboxMap.end()) {
+		const auto& [tabIdx, itemIdx] = it->second;
+		ApiBreakPointInfo& apiInfo = g_Api_Groups[tabIdx].apiList[itemIdx];
+		ToggleBreakpoint(hButton, apiInfo);
+	}
+}
+
 void ApiBreakpointManager::InitTooltip() {
 	m_hTooltip = CreateWindowEx(
 		WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
@@ -129,59 +297,6 @@ LRESULT ApiBreakpointManager::HandleMsgTooltip(HWND hwnd, UINT uMsg,WPARAM wPara
 	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
-void ApiBreakpointManager::ShowMainWindow() {
-	if (m_hMainWnd && IsWindowVisible(m_hMainWnd)) {
-		SetForegroundWindow(m_hMainWnd);
-		return;
-	}
-
-	m_hMainWnd = CreateWindowW(CLASS_NAME, L"API断点管理器",
-		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		MulDiv(MAINWINDOW_WIDTH, m_dpi.current, 96),
-		MulDiv(MAINWINDOW_HEIGHT, m_dpi.current, 96),
-		nullptr, nullptr, g_hInstance, this);
-
-	CreateTabControl();
-	::ShowWindow(m_hMainWnd, SW_SHOW);
-	CenterWindow();
-	UpdateWindow(m_hMainWnd);
-}
-
-
-UINT ApiBreakpointManager::GetCurrentDPI() {
-	// 尝试加载 GetDpiForSystem（Windows 10 及以上）
-	static auto pGetDpiForSystem = [] {
-		HMODULE hUser32 = LoadLibraryW(L"user32.dll");
-		return hUser32 ? (UINT(WINAPI*)())GetProcAddress(hUser32, "GetDpiForSystem") : nullptr;
-	}();
-
-	if (pGetDpiForSystem) {
-		return pGetDpiForSystem();
-	}
-	else {
-		// 否则，使用 GetDeviceCaps 获取屏幕 DPI
-		HDC hdc = GetDC(nullptr);
-		if (hdc) {
-			UINT dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-			ReleaseDC(nullptr, hdc);
-			return dpi;
-		}
-	}
-
-	// 默认 DPI
-	return 96;
-}
-
-
-void ApiBreakpointManager::HandleDpiChange() {
-	m_dpi.current = GetCurrentDPI();
-	m_dpi.scaling = m_dpi.current / 96.0f;
-	RecreateFonts();
-	CenterWindow();
-	AdjustLayout();
-}
-
 
 void ApiBreakpointManager::AdjustLayout() {
 	if (!m_hMainWnd || !m_hTabCtrl) return;
@@ -227,113 +342,6 @@ void ApiBreakpointManager::AdjustLayout() {
 			SetWindowPos(checkboxes[i], nullptr, x, y, checkWidth, checkHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 	}
-}
-
-void ApiBreakpointManager::CenterWindow(){
-	if (!m_hMainWnd) return;
-
-	// 获取父窗口（调试器主窗口）
-	HWND hParent = GetParent(m_hMainWnd);
-	if (!hParent) hParent = GetDesktopWindow();
-
-	
-
-	// 获取窗口和父窗口的尺寸
-	RECT rcWindow, rcParent, rc;
-	GetWindowRect(m_hMainWnd, &rcWindow);
-	GetWindowRect(hParent, &rcParent);
-	CopyRect(&rc, &rcParent);
-
-	OffsetRect(&rcWindow, -rcWindow.left, -rcWindow.top);
-	OffsetRect(&rc, -rc.left, -rc.top);
-	OffsetRect(&rc, -rcWindow.right, -rcWindow.bottom);
-
-	SetWindowPos(m_hMainWnd,
-		HWND_TOP,
-		rcParent.left + (rc.right / 2),
-		rcParent.top + (rc.bottom / 2),
-		0, 0,          // Ignores size arguments. 
-		SWP_NOSIZE);
-}
-
-LRESULT CALLBACK ApiBreakpointManager::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	ApiBreakpointManager* pThis = nullptr;
-
-	if (msg == WM_NCCREATE) {
-		// 从创建参数获取实例指针
-		CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
-		pThis = static_cast<ApiBreakpointManager*>(pCreate->lpCreateParams);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis));
-		pThis->m_hMainWnd = hwnd;
-	}
-	else {
-		pThis = reinterpret_cast<ApiBreakpointManager*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	}
-
-	if (pThis) {
-		return pThis->HandleMessage(hwnd, msg, wParam, lParam);
-	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg) {
-	case WM_CREATE:
-		Initialize();
-		InitTooltip();
-		return 0;
-
-	case WM_SIZE:
-		AdjustLayout();
-		return 0;
-
-	case WM_DPICHANGED: {
-		m_dpi.current = LOWORD(wParam);
-		HandleDpiChange();
-		RECT* const rect = reinterpret_cast<RECT*>(lParam);
-		SetWindowPos(m_hMainWnd, nullptr,
-			rect->left, rect->top,
-			rect->right - rect->left,
-			rect->bottom - rect->top,
-			SWP_NOZORDER | SWP_NOACTIVATE);
-		return 0;
-	}
-
-	case WM_COMMAND:
-		if (HIWORD(wParam) == BN_CLICKED) {
-			HandleButtonClick(reinterpret_cast<HWND>(lParam));
-		}
-		return 0;
-
-	case WM_NOTIFY:
-		return HandleNotify(reinterpret_cast<NMHDR*>(lParam));
-
-	case WM_DRAWITEM:{
-		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
-		HWND hButton = pDrawItem->hwndItem;
-		// 检查是否是复选框
-		if (pDrawItem->CtlType != ODT_BUTTON)
-			return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
-
-		DrawCheckbox(
-			reinterpret_cast<HWND>(reinterpret_cast<DRAWITEMSTRUCT*>(lParam)->hwndItem),
-			reinterpret_cast<DRAWITEMSTRUCT*>(lParam));
-		return TRUE;
-	}
-
-	case WM_DESTROY:
-		Cleanup();
-		//PostQuitMessage(0);
-		return 0;
-
-	case WM_CLOSE:
-		DestroyWindow(m_hMainWnd); // 仅销毁当前窗口
-		return 0;
-
-	default:
-		break;
-	}
-	return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
 }
 
 void ApiBreakpointManager::CreateTabControl() {
@@ -429,31 +437,6 @@ void ApiBreakpointManager::UpdateCheckboxes(int tabIndex) {
 	}
 }
 
-LRESULT ApiBreakpointManager::HandleNotify(NMHDR* pHdr) {
-	if (pHdr->code == TTN_GETDISPINFO) {
-		NMTTDISPINFO* pInfo = reinterpret_cast<NMTTDISPINFO*>(pHdr);
-		auto it = m_TruncatedInfos.find(pInfo->hdr.hwndFrom);
-		if (it != m_TruncatedInfos.end()) {
-			pInfo->lpszText = const_cast<LPWSTR>(it->second.fullText.c_str());
-		}
-		return 0;
-	}
-
-	if (pHdr->idFrom != IDC_TABCTRL)
-		return 0;
-
-	switch (pHdr->code) {
-		case TCN_SELCHANGE:
-			OnTabChanged();
-			return TRUE;
-
-	}
-	
-
-	return DefWindowProc(m_hMainWnd, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(pHdr));
-	//return 0;
-}
-
 void ApiBreakpointManager::OnTabChanged() {
 	int newTab = TabCtrl_GetCurSel(m_hTabCtrl);
 	SwitchTabContent(m_currentTab, newTab);
@@ -496,15 +479,6 @@ void ApiBreakpointManager::SwitchTabContent(int oldTabIndex, int newTabIndex) {
 	m_currentTab = newTabIndex;
 	// 强制重绘防止残留
 	RedrawWindow(m_hTabCtrl, nullptr, nullptr,RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW);
-}
-
-void ApiBreakpointManager::HandleButtonClick(HWND hButton) {
-	auto it = m_checkboxMap.find(hButton);
-	if (it != m_checkboxMap.end()) {
-		const auto& [tabIdx, itemIdx] = it->second;
-		ApiBreakPointInfo& apiInfo = g_Api_Groups[tabIdx].apiList[itemIdx];
-		ToggleBreakpoint(hButton, apiInfo);
-	}
 }
 
 void ApiBreakpointManager::ToggleBreakpoint(HWND hButton, ApiBreakPointInfo& apiInfo) {
@@ -740,6 +714,29 @@ void ApiBreakpointManager::RecreateFonts() {
 	}
 }
 
+UINT ApiBreakpointManager::GetCurrentDPI() {
+	// 尝试加载 GetDpiForSystem（Windows 10 及以上）
+	static auto pGetDpiForSystem = [] {
+		HMODULE hUser32 = LoadLibraryW(L"user32.dll");
+		return hUser32 ? (UINT(WINAPI*)())GetProcAddress(hUser32, "GetDpiForSystem") : nullptr;
+	}();
+
+	if (pGetDpiForSystem) {
+		return pGetDpiForSystem();
+	}
+	else {
+		// 否则，使用 GetDeviceCaps 获取屏幕 DPI
+		HDC hdc = GetDC(nullptr);
+		if (hdc) {
+			UINT dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+			ReleaseDC(nullptr, hdc);
+			return dpi;
+		}
+	}
+
+	// 默认 DPI
+	return 96;
+}
 // 正确限定作用域的实现
 ApiBreakpointManager::DpiInfo ApiBreakpointManager::GetDpiState() const {
 	return m_dpi; 

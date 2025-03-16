@@ -8,9 +8,14 @@
         "description": "case1ceshianli"
       },
       {
+        "dllName": "",
+        "apiName": "NtDebugActiveProcess",
+        "description": "创建子进程调试自己"
+      },
+      {
         "dllName": "22",
         "apiName": "test2_34567",
-        "description": "case2111111111111111111111111111"
+        "description": "case2111111111111111111111111111egessesgsgesgsgesgesgesgesgesgesgesgesgsgesges"
       },
       {
         "dllName": "333",
