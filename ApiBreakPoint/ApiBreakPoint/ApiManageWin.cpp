@@ -7,8 +7,7 @@ namespace {
 	constexpr int CHECKBOX_COLUMNS = 3;
 	constexpr int TAB_HEIGHT = 35;
 	constexpr int CHECKBOX_HEIGHT = 25;
-	constexpr int MARGIN_SIZE = 10;
-	constexpr int MARGIN = 8;
+	constexpr int MARGIN = 10;
 	constexpr int IDC_TABCTRL = 1500;
 	constexpr int IDC_CHECK_FIRST = 1500;
 	constexpr int MAX_CHECKS_PER_TAB = 100;
@@ -38,6 +37,7 @@ void ApiBreakpointManager::Initialize() {
 
 	m_dpi.current = GetCurrentDPI();
 	m_dpi.scaling = m_dpi.current / 96.0f;
+	UpdateDPICache(m_dpi.current);
 	RecreateFonts();
 	InitCommonControls();
 }
@@ -120,6 +120,13 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	case WM_NOTIFY:
 		return HandleNotify(reinterpret_cast<NMHDR*>(lParam));
+
+	case WM_PAINT:
+		HDC hdc;
+		PAINTSTRUCT ps;
+		hdc = BeginPaint(hwnd, &ps);
+		EndPaint(hwnd, &ps);
+		return 0;
 
 	case WM_DRAWITEM: {
 		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
@@ -302,46 +309,55 @@ void ApiBreakpointManager::AdjustLayout() {
 	if (!m_hMainWnd || !m_hTabCtrl) return;
 	RECT rc;
 	GetClientRect(m_hMainWnd, &rc);
+	//GetClientRect(m_hTabCtrl, &rcTab);
 	const int width = rc.right - rc.left;
 	const int height = rc.bottom - rc.top;
 
-	// Tab控件
-	const int tabHeight = MulDiv(TAB_HEIGHT, m_dpi.current, 96);
+	// 调整Tab控件
+	const int tabHeight = m_cachedTabHeight;
 	SetWindowPos(m_hTabCtrl, nullptr, 0, 0, width, tabHeight, SWP_NOZORDER);
 
 	// 复选框布局
-	const int margin = MulDiv(MARGIN_SIZE, m_dpi.current, 96);
+	const int margin = m_cachedMargin;
 	const int checkWidth = (width - margin * (CHECKBOX_COLUMNS + 1)) / CHECKBOX_COLUMNS;
-	const int checkHeight = MulDiv(CHECKBOX_HEIGHT, m_dpi.current, 96);
+	const int checkHeight = m_cachedCheckHeight;
 
-	// 调整Tab控件
-	SetWindowPos(m_hTabCtrl, NULL,
-		0, 0, rc.right, tabHeight,
-		SWP_NOZORDER | SWP_NOACTIVATE);
+	int columns = CHECKBOX_COLUMNS;
+
+	//调整复选框
+	int currentTab = TabCtrl_GetCurSel(m_hTabCtrl);
+	if (currentTab == -1) {
+		return; // 没有选中的选项卡
+	}
+
+	auto& checkboxes = m_tabChecks[currentTab].checkboxes;
+	const size_t itemCount = checkboxes.size();
 
 	// 计算每列的宽度和每行的高度
 	int totalMargin = margin * (CHECKBOX_COLUMNS + 1);
 	int availableWidth = width - totalMargin;
 	int availableHeight = height - tabHeight;
 
-	//调整复选框
-	m_currentTab = TabCtrl_GetCurSel(m_hTabCtrl);
-	if (m_currentTab == -1) {
-		return; // 没有选中的选项卡
+	
+
+	const int stepX = checkWidth + margin;
+	const int stepY = checkHeight + margin;
+	const int startY = tabHeight + margin;
+
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(itemCount));
+	for (size_t i = 0; i < itemCount; i++) {
+		int  col = static_cast<int>(i % columns);
+		int  row = static_cast<int>(i / columns);
+		int x = margin + col * stepX;
+		int y = startY + row * stepY;
+		hdwp = DeferWindowPos(hdwp, checkboxes[i], nullptr,
+			x, y, checkWidth, checkHeight,
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
 	}
 
-	auto& checkboxes = m_tabChecks[m_currentTab].checkboxes;
+	EndDeferWindowPos(hdwp);
+	RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_ERASE);
 
-	for (size_t i = 0; i < checkboxes.size(); i++) {
-		int  col = static_cast<int>(i % CHECKBOX_COLUMNS);
-		int  row = static_cast<int>(i / CHECKBOX_COLUMNS);
-		int x = margin + col * (checkWidth + margin);
-		int y = tabHeight + margin + row * (checkHeight + margin);
-
-		if (checkboxes[i]) {
-			SetWindowPos(checkboxes[i], nullptr, x, y, checkWidth, checkHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-		}
-	}
 }
 
 void ApiBreakpointManager::CreateTabControl() {
@@ -353,7 +369,7 @@ void ApiBreakpointManager::CreateTabControl() {
 
 	SendMessage(m_hTabCtrl, WM_SETFONT, (WPARAM)m_dpi.tabfont, TRUE);
 	CreateTabs();
-	AdjustLayout();
+	//AdjustLayout();
 }
 
 void ApiBreakpointManager::CreateTabs() {
@@ -392,12 +408,15 @@ void ApiBreakpointManager::CreateTabContent(int tabIndex) {
 	const auto& apiGroup = g_Api_Groups[tabIndex];
 
 	size_t checkCount = g_Api_Groups[tabIndex].apiList.size();
-	auto&  Hcheckboxes = curtab.checkboxes;
-	Hcheckboxes.reserve(checkCount);
 
+	auto& Hcheckboxes = curtab.checkboxes;
+	if (!curtab.checkboxes.size()) {
+		Hcheckboxes.reserve(checkCount);
+	}
+	
 	for (size_t chkIdx = 0; chkIdx < checkCount; ++chkIdx) {
 		HWND hCheck = CreateWindowW(L"BUTTON", L"",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD |WS_VISIBLE | BS_OWNERDRAW,
 			0, 0, 0, 0, 
 			m_hMainWnd, 
 			//nullptr,
@@ -440,7 +459,6 @@ void ApiBreakpointManager::UpdateCheckboxes(int tabIndex) {
 void ApiBreakpointManager::OnTabChanged() {
 	int newTab = TabCtrl_GetCurSel(m_hTabCtrl);
 	SwitchTabContent(m_currentTab, newTab);
-	m_currentTab = newTab;
 }
 
 void ApiBreakpointManager::SwitchTabContent(int oldTabIndex, int newTabIndex) {
@@ -472,7 +490,7 @@ void ApiBreakpointManager::SwitchTabContent(int oldTabIndex, int newTabIndex) {
 	// 显示新选项卡内容并更新布局
 	for (HWND hCheck : newTab.checkboxes) {
 		ShowWindow(hCheck, SW_SHOW);
-		UpdateWindow(hCheck); // 立即更新防止闪烁
+		//UpdateWindow(hCheck); // 立即更新防止闪烁
 	}
 
 	// 更新当前选项卡索引
@@ -520,6 +538,12 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	const auto& [tabIndex, itemIndex] = m_checkboxMap[hWnd];
 	auto& apiInfo = g_Api_Groups[tabIndex].apiList[itemIndex];
 	HDC hDC = pDrawItem->hDC;
+	RECT rcItem = pDrawItem->rcItem;
+	// 双缓冲绘制
+	HDC hMemDC = CreateCompatibleDC(hDC);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hDC, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top);
+	HGDIOBJ hOldBitmap = SelectObject(hMemDC, hBitmap);
+
 	// 更新 DPI 资源
 	ApiBreakpointManager::m_checkboxCache.UpdateDpiResources(m_dpi.current);
 
@@ -529,18 +553,18 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	// 背景画刷处理
 	const COLORREF bgColor = GetSysColor(COLOR_WINDOW);
 	m_checkboxCache.UpdateBrush(bgColor);
-	FillRect(hDC, &pDrawItem->rcItem, m_checkboxCache.bgBrush);
+	FillRect(hMemDC, &rcItem, m_checkboxCache.bgBrush);
 
 	// 字体度量更新
 	m_checkboxCache.UpdateFontMetrics(hDC);
 
 	// 绘制状态管理
 	if (m_checkboxCache.lastTextColor != GetSysColor(COLOR_WINDOWTEXT)) {
-		SetTextColor(hDC, m_checkboxCache.lastTextColor = GetSysColor(COLOR_WINDOWTEXT));
+		SetTextColor(hMemDC, m_checkboxCache.lastTextColor = GetSysColor(COLOR_WINDOWTEXT));
 	}
 
 	if (m_checkboxCache.lastBkMode != TRANSPARENT) {
-		SetBkMode(hDC, m_checkboxCache.lastBkMode = TRANSPARENT);
+		SetBkMode(hMemDC, m_checkboxCache.lastBkMode = TRANSPARENT);
 	}
 	HFONT font = m_checkboxCache.currentFont;
 
@@ -557,7 +581,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	UINT frameState = DFCS_BUTTONCHECK;
 	if (apiInfo.bBpSet) frameState |= DFCS_CHECKED;
 	if (pDrawItem->itemState & ODS_DISABLED) frameState |= DFCS_INACTIVE;
-	DrawFrameControl(hDC, &rcCheck, DFC_BUTTON, frameState);
+	DrawFrameControl(hMemDC, &rcCheck, DFC_BUTTON, frameState);
 
 	// 7. 绘制自定义对勾
 	if (apiInfo.bBpSet) {
@@ -565,7 +589,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 			m_checkboxCache.checkPen = CreatePen(PS_SOLID, m_checkboxCache.penWidth, RGB(0, 0, 0));
 		}
 
-		HGDIOBJ hOldPen = SelectObject(hDC, m_checkboxCache.checkPen);
+		HGDIOBJ hOldPen = SelectObject(hMemDC, m_checkboxCache.checkPen);
 
 		POINT dynamicPoints[3];
 		for (int i = 0; i < 3; ++i) {
@@ -574,10 +598,10 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 				rcCheck.top + m_checkboxCache.checkPoints[i].y
 			};
 		}
-		Polyline(hDC, dynamicPoints, 3);
-		SelectObject(hDC, hOldPen);
+		Polyline(hMemDC, dynamicPoints, 3);
+		SelectObject(hMemDC, hOldPen);
 
-		SetTextColor(hDC, RGB(0, 0, 255));
+		SetTextColor(hMemDC, RGB(0, 0, 255));
 	}
 
 	// 文本布局计算
@@ -590,6 +614,8 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	std::wstring dllName = apiInfo.dllName;
 	std::wstring apiName = apiInfo.apiName;
 	std::wstring description = apiInfo.description;
+
+	HFONT hOldFont = (HFONT)SelectObject(hMemDC, font);
 	
 	// 分层次绘制文本
 	const int textFlags = DT_SINGLELINE | DT_VCENTER | DT_NOCLIP;
@@ -602,7 +628,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
 		rcDll.bottom = rcText.bottom;
-		DrawTextW(hDC, dllName.c_str(), -1, &rcDll, DT_LEFT | textFlags);
+		DrawTextW(hMemDC, dllName.c_str(), -1, &rcDll, DT_LEFT | textFlags);
 	}
 	else {
 		rcDll.right = rcText.left;
@@ -617,7 +643,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 		rcApi.right = rcApi.left + apiCache.size.cx;
 		rcApi.top = rcText.top;
 		rcApi.bottom = rcText.bottom;
-		DrawTextW(hDC, apiName.c_str(), -1, &rcApi, DT_LEFT | textFlags);
+		DrawTextW(hMemDC, apiName.c_str(), -1, &rcApi, DT_LEFT | textFlags);
 
 	}
 	else {
@@ -631,11 +657,11 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, font, 0, 0);
 		rcDesc.right = rcDesc.left + apiCache.size.cx;
 		if (rcDesc.right < rcText.right) {
-			DrawTextW(hDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
+			DrawTextW(hMemDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
 		}
 		else {
 			rcText.left = rcApi.right + textMargin;
-			DrawTextW(hDC, description.c_str(), -1, &rcText, DT_LEFT | DT_SINGLELINE| DT_VCENTER | DT_END_ELLIPSIS);
+			DrawTextW(hMemDC, description.c_str(), -1, &rcText, DT_LEFT | DT_SINGLELINE| DT_VCENTER | DT_END_ELLIPSIS);
 
 			const int requiredWidth = apiCache.size.cx;
 			const int availableWidth = rcText.right - rcText.left;
@@ -655,6 +681,13 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 		
 		
 	}
+
+	BitBlt(hDC, rcItem.left, rcItem.top, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top,
+		hMemDC, 0, 0, SRCCOPY);
+
+	SelectObject(hMemDC, hOldBitmap);
+	DeleteObject(hBitmap);
+	DeleteDC(hMemDC);
 
 }
 
@@ -740,6 +773,13 @@ UINT ApiBreakpointManager::GetCurrentDPI() {
 // 正确限定作用域的实现
 ApiBreakpointManager::DpiInfo ApiBreakpointManager::GetDpiState() const {
 	return m_dpi; 
+}
+
+void ApiBreakpointManager::UpdateDPICache(UINT newDPI) {
+	m_cachedDPI = newDPI;
+	m_cachedTabHeight = MulDiv(TAB_HEIGHT, newDPI, 96);
+	m_cachedMargin = MulDiv(MARGIN, newDPI, 96);
+	m_cachedCheckHeight = MulDiv(CHECKBOX_HEIGHT, newDPI, 96);
 }
 
 void ApiBreakpointManager::Cleanup() {

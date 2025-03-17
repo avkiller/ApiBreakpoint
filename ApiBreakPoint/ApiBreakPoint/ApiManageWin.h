@@ -84,6 +84,7 @@ private:
     //void HandleScroll(HWND hWnd, WPARAM wParam);
 
     void RecreateFonts();
+    void UpdateDPICache(UINT newDPI);
     void HandleDpiChange();
     LRESULT HandleNotify(NMHDR* pHdr);
     void OnTabChanged();
@@ -101,6 +102,12 @@ private:
     int m_totalContentHeight = 0;
     DpiState m_dpi;
     UINT GetCurrentDPI();
+
+    //缓存部分值
+    int m_cachedDPI;
+    int m_cachedTabHeight;
+    int m_cachedMargin;
+    int m_cachedCheckHeight;
 
     struct TruncatedCheckboxInfo {
         RECT rcTruncated{0, 0, 0, 0};       // 截断区域坐标
