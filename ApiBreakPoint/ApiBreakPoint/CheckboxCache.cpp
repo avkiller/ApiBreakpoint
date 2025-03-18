@@ -57,17 +57,14 @@ int CheckboxCache::CalculateTextWidth(HDC hdc, const std::wstring& text)
 
 // CacheKey 的 operator== 实现
 bool CacheKey::operator==(const CacheKey& other) const {
-    return text == other.text && font == other.font &&
-        dpiX == other.dpiX && format == other.format &&
-        maxWidth == other.maxWidth;
+    return text == other.text &&
+        dpiX == other.dpiX;
 }
 
 // std::hash 特化实现
 namespace std {
     size_t hash<CacheKey>::operator()(const CacheKey& key) const {
-        return hash<wstring>()(key.text) ^ hash<HFONT>()(key.font) ^
-            hash<int>()(key.dpiX) ^ hash<UINT>()(key.format) ^
-            hash<int>()(key.maxWidth);
+        return hash<wstring>()(key.text) ^hash<int>()(key.dpiX);
     }
 }
 
@@ -75,13 +72,13 @@ namespace std {
 // TextLayoutCache 成员函数实现
 TextLayoutCache::TextLayoutCache(size_t maxSize) : m_maxSize(maxSize) {}
 
-CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, HFONT font, UINT format, int maxWidth) {
+CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text) {
 
     auto& manager = ApiBreakpointManager::GetInstance();
     const int m_dpi = manager.GetApiWinDPI();
     const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
    
-    CacheKey key{ text, font, dpiX, format, maxWidth };
+    CacheKey key{ text, dpiX};
 
     // LRU 缓存查询
     auto it = g_cache.find(key);
@@ -94,8 +91,8 @@ CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, HFO
 
     // 缓存未命中，计算 RECT 和 SIZE
     CacheValue result{};
-    RECT rc = { 0, 0, maxWidth, 0 }; // 初始宽度为 maxWidth，高度自动扩展
-    DrawTextW(hdc, text.c_str(), -1, &rc, format | DT_CALCRECT);
+    RECT rc = { 0, 0, 0, 0 }; // 初始宽度为 maxWidth，高度自动扩展
+    DrawTextW(hdc, text.c_str(), -1, &rc, DT_CALCRECT);
 
     // 转换为物理像素（若需要）
     if (dpiX!= m_dpi) {

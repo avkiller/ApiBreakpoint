@@ -5,8 +5,10 @@ namespace {
 	constexpr int MAINWINDOW_WIDTH = 800;
 	constexpr int MAINWINDOW_HEIGHT = 600;
 	constexpr int CHECKBOX_COLUMNS = 3;
-	constexpr int TAB_HEIGHT = 35;
+	constexpr int TAB_HEIGHT = 32;
 	constexpr int CHECKBOX_HEIGHT = 25;
+	constexpr int CHECKBOX_MINCHECKWIDTH = 180;
+	constexpr int CHECKBOX_MAXCHECKWIDTH = 360;
 	constexpr int MARGIN = 10;
 	constexpr int IDC_TABCTRL = 1500;
 	constexpr int IDC_CHECK_FIRST = 1500;
@@ -96,8 +98,29 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 		InitTooltip();
 		return 0;
 
+	//case WM_VSCROLL:{
+	//	/*HandleScroll(hwnd, wParam);
+	//	AdjustLayout();*/
+	//	ULONGLONG s_lastScrollTime = 0;
+	//	ULONGLONG now = GetTickCount64();
+	//	if (now - s_lastScrollTime > 100) { // 50ms间隔
+	//		HandleScroll(hwnd, wParam);
+	//		AdjustLayout();
+	//		s_lastScrollTime = now;
+	//	}
+	//	break;
+	//
+	//}
+		
+	case WM_MOUSEWHEEL: {
+		HandleMouseWheel(wParam, hwnd);
+		break;
+	}
+
 	case WM_SIZE:
-		AdjustLayout();
+		//AdjustLayout();
+		UpdateTabLayout();
+		UpdateTabWinPos();
 		return 0;
 
 	case WM_DPICHANGED: {
@@ -121,12 +144,11 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	case WM_NOTIFY:
 		return HandleNotify(reinterpret_cast<NMHDR*>(lParam));
 
-	case WM_PAINT:
-		HDC hdc;
-		PAINTSTRUCT ps;
-		hdc = BeginPaint(hwnd, &ps);
-		EndPaint(hwnd, &ps);
-		return 0;
+	case WM_PAINT: {
+		HandlePaint(hwnd);
+		return TRUE;
+	}
+		
 
 	case WM_DRAWITEM: {
 		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
@@ -156,6 +178,49 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
 }
 
+void ApiBreakpointManager::HandlePaint(HWND hwnd)
+{
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hwnd, &ps);
+	RECT rcClient;
+	GetClientRect(hwnd, &rcClient);
+	int cxClient = rcClient.right - rcClient.left;  // 客户区宽度
+	int cyClient = rcClient.bottom - rcClient.top;
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	HBITMAP hbmMem = CreateCompatibleBitmap(hdc, cxClient, cyClient);
+	SelectObject(hdcMem, hbmMem);
+
+	// 所有绘制操作在内存DC进行
+
+	HBRUSH hBgBrush = CreateSolidBrush(RGB(255, 255, 255));
+	FillRect(hdcMem, &rcClient, hBgBrush);
+	DeleteObject(hBgBrush);
+
+	BitBlt(hdc, 0, 0, cxClient, cyClient, hdcMem, 0, 0, SRCCOPY);
+	DeleteObject(hbmMem);
+	DeleteDC(hdcMem);
+	EndPaint(hwnd, &ps);
+}
+
+void ApiBreakpointManager::HandleMouseWheel(WPARAM& wParam, HWND hwnd)
+{
+	if (!m_needScroll) return;
+	ULONGLONG s_lastScrollTime = 0;
+
+	ULONGLONG now = GetTickCount64();
+
+	if (now - s_lastScrollTime > 100) {
+		int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		UINT scrollCmd = (delta > 0) ? SB_LINEUP : SB_LINEDOWN;
+		HandleScroll(hwnd, MAKEWPARAM(scrollCmd, 0));
+		_plugin_logprintf("[+] ApiBreakpoint: WM_MOUSEWHEEL CALL AdjustLayout\n");
+		//AdjustLayout();
+		UpdateTabWinPos();
+		s_lastScrollTime = now;
+	}
+
+}
+
 void ApiBreakpointManager::ShowMainWindow() {
 	if (m_hMainWnd && IsWindowVisible(m_hMainWnd)) {
 		SetForegroundWindow(m_hMainWnd);
@@ -163,7 +228,7 @@ void ApiBreakpointManager::ShowMainWindow() {
 	}
 
 	m_hMainWnd = CreateWindowW(CLASS_NAME, L"API断点管理器",
-		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_VSCROLL,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		MulDiv(MAINWINDOW_WIDTH, m_dpi.current, 96),
 		MulDiv(MAINWINDOW_HEIGHT, m_dpi.current, 96),
@@ -180,7 +245,9 @@ void ApiBreakpointManager::HandleDpiChange() {
 	m_dpi.scaling = m_dpi.current / 96.0f;
 	RecreateFonts();
 	CenterWindow();
-	AdjustLayout();
+	UpdateTabLayout();
+	UpdateTabWinPos();
+	//AdjustLayout();
 }
 
 LRESULT ApiBreakpointManager::HandleNotify(NMHDR* pHdr) {
@@ -215,6 +282,35 @@ void ApiBreakpointManager::HandleButtonClick(HWND hButton) {
 		ApiBreakPointInfo& apiInfo = g_Api_Groups[tabIdx].apiList[itemIdx];
 		ToggleBreakpoint(hButton, apiInfo);
 	}
+}
+
+void ApiBreakpointManager::HandleScroll(HWND hWnd, WPARAM wParam) {
+
+	SCROLLINFO si = { sizeof(SCROLLINFO), SIF_ALL };
+	GetScrollInfo(hWnd, SB_VERT, &si);
+
+	switch (LOWORD(wParam)) {
+	case SB_LINEUP:   si.nPos -= 1; break;
+	case SB_LINEDOWN: si.nPos += 1; break;
+	case SB_PAGEUP:   si.nPos -= si.nPage; break;
+	case SB_PAGEDOWN: si.nPos += si.nPage; break;
+	case SB_THUMBTRACK:
+	case SB_THUMBPOSITION:
+		si.nPos = si.nTrackPos;
+		break;
+	}
+
+	// 确保页数在有效范围内
+	si.nPos = max(si.nMin, min(si.nPos, si.nMax - (int)si.nPage + 1));
+	si.fMask = SIF_POS;
+
+	SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
+	m_vScrollPage = si.nPos;
+	if (m_vScrollPage == 1) {
+		_plugin_logprintf("[+] ApiBreakpoint HandleScroll: do scroll \n", si.nPos);
+	}
+
+	_plugin_logprintf("[+] ApiBreakpoint HandleScroll: si.nPos: %d\n", si.nPos);
 }
 
 void ApiBreakpointManager::InitTooltip() {
@@ -307,56 +403,99 @@ LRESULT ApiBreakpointManager::HandleMsgTooltip(HWND hwnd, UINT uMsg,WPARAM wPara
 
 void ApiBreakpointManager::AdjustLayout() {
 	if (!m_hMainWnd || !m_hTabCtrl) return;
-	RECT rc;
-	GetClientRect(m_hMainWnd, &rc);
-	//GetClientRect(m_hTabCtrl, &rcTab);
-	const int width = rc.right - rc.left;
-	const int height = rc.bottom - rc.top;
+
+	//获取主窗口的位置信息
+	RECT rcMain;
+	GetClientRect(m_hMainWnd, &rcMain);
+	const int mainWidth = rcMain.right - rcMain.left;
+	const int mainHeight = rcMain.bottom - rcMain.top;
+
+	int availableWidth = mainWidth;
+	int availableHeight = mainHeight;
+
+	int tabIndex = TabCtrl_GetCurSel(m_hTabCtrl);
+	int itemsCnt = static_cast<int>(m_tabChecks[tabIndex].checkboxes.size());
 
 	// 调整Tab控件
 	const int tabHeight = m_cachedTabHeight;
-	SetWindowPos(m_hTabCtrl, nullptr, 0, 0, width, tabHeight, SWP_NOZORDER);
+	SetWindowPos(m_hTabCtrl, nullptr, 0, 0, mainWidth, tabHeight, SWP_NOZORDER);
 
 	// 复选框布局
 	const int margin = m_cachedMargin;
-	const int checkWidth = (width - margin * (CHECKBOX_COLUMNS + 1)) / CHECKBOX_COLUMNS;
 	const int checkHeight = m_cachedCheckHeight;
+	const int minCheckWidth = m_cachedMinCheckWidth;
+	const int maxCheckWidth = m_cachedMaxCheckWidth;
 
-	int columns = CHECKBOX_COLUMNS;
+	// 动态计算列数
+	int columns = (availableWidth - margin) / (minCheckWidth + margin);
+	columns = max(1, columns);
+	const int balanceThreshold = 15; // 降低平衡阈值
+	if (itemsCnt <= balanceThreshold) {
+		columns = min(columns, 2);
+	}
+	else {
+		columns = min(columns, static_cast<int>(sqrt(itemsCnt)) + 1);
+	}
+	columns = clamp(columns, 1, static_cast<int>(itemsCnt));
 
-	//调整复选框
-	int currentTab = TabCtrl_GetCurSel(m_hTabCtrl);
-	if (currentTab == -1) {
-		return; // 没有选中的选项卡
+	// 计算复选框的宽度
+	int checkWidth = (availableWidth - margin * (columns + 1)) / columns;
+	checkWidth = clamp(checkWidth, minCheckWidth, maxCheckWidth);
+	const int viewportHeight = mainHeight - tabHeight - margin * 2;
+	const int rowHeight = checkHeight + margin;
+	int rowsPerPage = viewportHeight / rowHeight;
+	if (viewportHeight % rowHeight != 0) {
+		rowsPerPage++;
 	}
 
-	auto& checkboxes = m_tabChecks[currentTab].checkboxes;
-	const size_t itemCount = checkboxes.size();
+	// 计算实际需要的高度
+	const int totalRows = (itemsCnt + columns - 1) / columns;
+	m_rowsPerPage = rowsPerPage;
+	//const int totalCheckHeight = totalRows * rowHeight;
+	//const int scrollRange = totalCheckHeight - viewportHeight;
+	//const int scrollRange = (itemCount + ItemsPerPage - 1) / ItemsPerPage;
+	const int scrollRange = totalRows-rowsPerPage-1;
+	m_maxScrollPage = max(0, scrollRange);
 
-	// 计算每列的宽度和每行的高度
-	int totalMargin = margin * (CHECKBOX_COLUMNS + 1);
-	int availableWidth = width - totalMargin;
-	int availableHeight = height - tabHeight;
+	m_needScroll = m_maxScrollPage > 0 ? TRUE : FALSE;
+	if (m_needScroll) {
+		// 设置滚动区域
+		SCROLLINFO info = { sizeof(SCROLLINFO) };
+		info.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		info.nMin = 0;
+		info.nMax = totalRows;
+		info.nPage = rowsPerPage;
+		info.nPos = clamp(m_vScrollPage, 0, m_maxScrollPage);
+		SetScrollInfo(m_hMainWnd, SB_VERT, &info, TRUE);
+		ShowScrollBar(m_hMainWnd, SB_VERT, TRUE);
+	}
+	else {
+		m_vScrollPage = 0;
+		ShowScrollBar(m_hMainWnd, SB_VERT, FALSE);
+	}
 
-	
-
+	//计算坐标
+	const int startIndex = m_vScrollPage * columns;
+	const int endIndex = min(startIndex + m_rowsPerPage, itemsCnt);
 	const int stepX = checkWidth + margin;
 	const int stepY = checkHeight + margin;
-	const int startY = tabHeight + margin;
+	int startY = tabHeight + margin;
 
-	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(itemCount));
-	for (size_t i = 0; i < itemCount; i++) {
-		int  col = static_cast<int>(i % columns);
-		int  row = static_cast<int>(i / columns);
+	auto& checkboxes = m_tabChecks[tabIndex].checkboxes;
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(itemsCnt));
+	for (int i=startIndex; i < itemsCnt; i++) {
+		int  col= static_cast<int>((i-startIndex) % columns);
+		int  row = static_cast<int>((i - startIndex) / columns);
 		int x = margin + col * stepX;
 		int y = startY + row * stepY;
 		hdwp = DeferWindowPos(hdwp, checkboxes[i], nullptr,
 			x, y, checkWidth, checkHeight,
-			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW| SWP_NOCOPYBITS);
 	}
 
 	EndDeferWindowPos(hdwp);
-	RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_ERASE);
+	//RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_ERASE);
+	RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN|RDW_FRAME);
 
 }
 
@@ -441,6 +580,119 @@ void ApiBreakpointManager::CreateTabContent(int tabIndex) {
 	//UpdateCheckboxes(tabIndex);
 }
 
+void ApiBreakpointManager::UpdateTabLayout() {
+	if (!m_hMainWnd || !m_hTabCtrl) return;
+	//获取主窗口的位置信息
+	RECT rcMain;
+	GetClientRect(m_hMainWnd, &rcMain);
+	const int mainWidth = rcMain.right - rcMain.left;
+	const int mainHeight = rcMain.bottom - rcMain.top;
+
+	int availableWidth = mainWidth;
+	int availableHeight = mainHeight;
+
+	int tabIndex = TabCtrl_GetCurSel(m_hTabCtrl);
+	int itemsCnt = static_cast<int>(m_tabChecks[tabIndex].checkboxes.size());
+
+	// 调整Tab控件
+	const int tabHeight = m_cachedTabHeight;
+	SetWindowPos(m_hTabCtrl, nullptr, 0, 0, mainWidth, tabHeight, SWP_NOZORDER);
+
+	// 复选框布局
+	const int margin = m_cachedMargin;
+	const int checkHeight = m_cachedCheckHeight;
+	const int minCheckWidth = m_cachedMinCheckWidth;
+	const int maxCheckWidth = m_cachedMaxCheckWidth;
+
+	// 动态计算列数
+	int columns = (availableWidth - margin) / (minCheckWidth + margin);
+	columns = max(1, columns);
+	const int balanceThreshold = 15; // 降低平衡阈值
+	if (itemsCnt <= balanceThreshold) {
+		columns = min(columns, 2);
+	}
+	else {
+		columns = min(columns, static_cast<int>(sqrt(itemsCnt)) + 1);
+	}
+	columns = clamp(columns, 1, static_cast<int>(itemsCnt));
+
+	m_cachedColumns = columns;
+
+	// 计算复选框的宽度
+	int checkWidth = (availableWidth - margin * (columns + 1)) / columns;
+	checkWidth = clamp(checkWidth, minCheckWidth, maxCheckWidth);
+	const int viewportHeight = mainHeight - tabHeight - margin * 2;
+	const int rowHeight = checkHeight + margin;
+	int rowsPerPage = viewportHeight / rowHeight;
+	if (viewportHeight % rowHeight != 0) {
+		rowsPerPage++;
+	}
+
+	// 计算实际需要的高度
+	const int totalRows = (itemsCnt + columns - 1) / columns;
+	const int scrollRange = totalRows - rowsPerPage - 1;
+	m_maxScrollPage = max(0, scrollRange);
+
+	//设置全局变量
+	m_rowsPerPage = rowsPerPage * columns;;
+	m_cachedColumns = columns;
+	m_cachedcheckWidth = checkWidth;
+	m_needScroll = m_maxScrollPage > 0 ? TRUE : FALSE;
+
+	//设置滚动条
+	if (m_needScroll) {
+		// 设置滚动区域
+		SCROLLINFO info = { sizeof(SCROLLINFO) };
+		info.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		info.nMin = 0;
+		info.nMax = totalRows;
+		info.nPage = rowsPerPage;
+		info.nPos = clamp(m_vScrollPage, 0, m_maxScrollPage);
+		SetScrollInfo(m_hMainWnd, SB_VERT, &info, TRUE);
+		ShowScrollBar(m_hMainWnd, SB_VERT, TRUE);
+	}
+	else {
+		m_vScrollPage = 0;
+		ShowScrollBar(m_hMainWnd, SB_VERT, FALSE);
+	}
+
+}
+
+void ApiBreakpointManager::UpdateTabWinPos() {
+
+	int tabIndex = TabCtrl_GetCurSel(m_hTabCtrl);
+	auto& checkboxes = m_tabChecks[tabIndex].checkboxes;
+	int itemsCnt = static_cast<int>(checkboxes.size());
+	int columns = m_cachedColumns;
+	int tabHeight = m_cachedTabHeight;
+	int margin = m_cachedMargin;
+	int checkWidth = m_cachedcheckWidth;
+	int checkHeight = m_cachedCheckHeight;
+	
+	//计算坐标
+	const int startIndex = m_vScrollPage * columns;
+	const int endIndex = min(startIndex + m_rowsPerPage, itemsCnt);
+	const int stepX = checkWidth + margin;
+	const int stepY = checkHeight + margin;
+	int startY = tabHeight + margin;
+
+	
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(itemsCnt));
+	for (int i = startIndex; i < itemsCnt; i++) {
+		int  col = static_cast<int>((i - startIndex) % columns);
+		int  row = static_cast<int>((i - startIndex) / columns);
+		int x = margin + col * stepX;
+		int y = startY + row * stepY;
+		hdwp = DeferWindowPos(hdwp, checkboxes[i], nullptr,
+			x, y, checkWidth, checkHeight,
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOCOPYBITS);
+	}
+
+	EndDeferWindowPos(hdwp);
+	//RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_ERASE);
+	RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME);
+}
+
 void ApiBreakpointManager::UpdateCheckboxes(int tabIndex) {
 	const auto& apiGroup = g_Api_Groups[tabIndex];
 	auto& tab = m_tabChecks[tabIndex];
@@ -484,7 +736,9 @@ void ApiBreakpointManager::SwitchTabContent(int oldTabIndex, int newTabIndex) {
 	auto& newTab = m_tabChecks[newTabIndex];
 	if (newTab.checkboxes.empty()) {
 		CreateTabContent(newTabIndex);
-		AdjustLayout();
+		UpdateTabLayout();
+		UpdateTabWinPos();
+		//AdjustLayout();
 	}
 
 	// 显示新选项卡内容并更新布局
@@ -624,7 +878,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDll.left = rcText.left + textMargin;
 	//  绘制DLL名称（左对齐）
 	if (!dllName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName, font, 0, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName);
 		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
 		rcDll.bottom = rcText.bottom;
@@ -639,7 +893,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	RECT rcApi = rcText;
 	rcApi.left = rcDll.right + textMargin;
 	if (!apiName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName, font, 0, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName);
 		rcApi.right = rcApi.left + apiCache.size.cx;
 		rcApi.top = rcText.top;
 		rcApi.bottom = rcText.bottom;
@@ -654,7 +908,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDesc.left = rcApi.right + textMargin;
 	// 绘制描述信息（右对齐）
 	if (!description.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, font, 0, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description);
 		rcDesc.right = rcDesc.left + apiCache.size.cx;
 		if (rcDesc.right < rcText.right) {
 			DrawTextW(hMemDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
@@ -780,6 +1034,8 @@ void ApiBreakpointManager::UpdateDPICache(UINT newDPI) {
 	m_cachedTabHeight = MulDiv(TAB_HEIGHT, newDPI, 96);
 	m_cachedMargin = MulDiv(MARGIN, newDPI, 96);
 	m_cachedCheckHeight = MulDiv(CHECKBOX_HEIGHT, newDPI, 96);
+	m_cachedMinCheckWidth = MulDiv(CHECKBOX_MINCHECKWIDTH, newDPI, 96);
+	m_cachedMaxCheckWidth = MulDiv(CHECKBOX_MAXCHECKWIDTH, newDPI, 96);
 }
 
 void ApiBreakpointManager::Cleanup() {

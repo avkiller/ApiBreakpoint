@@ -15,6 +15,7 @@
 #include "plugin.h"
 
 #pragma comment(lib, "comctl32.lib")
+using std::clamp;
 
 
 class ApiBreakpointManager {
@@ -76,17 +77,20 @@ private:
     void CreateTabControl();
     void CreateTabs();
     void CreateTabContent(int tabIndex);
+    void UpdateTabLayout();
+    void UpdateTabWinPos();
     void UpdateCheckboxes(int tabIndex);
     void AdjustLayout();
     void CenterWindow();
     void HandleButtonClick(HWND hButton);
     void ToggleBreakpoint(HWND hButton, ApiBreakPointInfo& apiInfo);
-    //void HandleScroll(HWND hWnd, WPARAM wParam);
-
+    void HandleScroll(HWND hWnd, WPARAM wParam);
     void RecreateFonts();
     void UpdateDPICache(UINT newDPI);
     void HandleDpiChange();
     LRESULT HandleNotify(NMHDR* pHdr);
+    void HandlePaint(HWND hwnd);
+    void HandleMouseWheel(WPARAM& wParam, HWND hwnd);
     void OnTabChanged();
     void SwitchTabContent(int oldTabIndex, int newTabIndex);
     void DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem);
@@ -98,6 +102,7 @@ private:
     HWND m_hTabCtrl = nullptr;
     HWND m_hTooltip = nullptr;
     int m_currentTab = 0;
+    int m_curTab_itemsCnt = 0;
     int m_currentScrollPos = 0;
     int m_totalContentHeight = 0;
     DpiState m_dpi;
@@ -108,10 +113,34 @@ private:
     int m_cachedTabHeight;
     int m_cachedMargin;
     int m_cachedCheckHeight;
+    int m_cachedcheckWidth;
+    int m_cachedColumns;
+    int m_cachedMinCheckWidth;
+    int m_cachedMaxCheckWidth;
+    int m_vScrollPage;          // 垂直滚动偏移量
+    int m_checkItemHeight;     // 单个复选框高度
+    int m_needScroll=FALSE;     // 单个复选框高度
+    int m_rowsPerPage;          // 每页显示行数
+    int m_maxScrollPage;          
+    int m_pageHeight;
 
     struct TruncatedCheckboxInfo {
         RECT rcTruncated{0, 0, 0, 0};       // 截断区域坐标
         std::wstring fullText;  // 完整描述文本
+    };
+
+    // 单个复选框的布局信息
+    struct CheckboxLayout {
+        POINT position;    // 位置 (x,y)
+        SIZE  size;        // 尺寸 (cx,cy)
+        bool  isVisible;    // 是否可见
+    };
+
+    struct TabLayoutInfo {
+        int currentPage;
+        int itemsPerPage;
+        int rows, cols;
+        std::unordered_map<int, CheckboxLayout> layoutCache;
     };
 
     // 资源管理
@@ -120,6 +149,8 @@ private:
     std::map<HWND, TruncatedCheckboxInfo> m_TruncatedInfos;
     CheckboxCache m_checkboxCache;
     TextLayoutCache m_textCache;
+
+    std::unordered_map<int, TabLayoutInfo> m_tabLayoutCache;
 
     //std::vector<std::future<void>> m_asyncFutures;
 };
