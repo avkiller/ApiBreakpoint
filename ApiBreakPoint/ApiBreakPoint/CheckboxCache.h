@@ -5,10 +5,7 @@
 
 struct CacheKey {
     std::wstring text;
-    HFONT font;
     int dpiX;
-    UINT format;
-    int maxWidth;
 
     bool operator==(const CacheKey& other) const;
 };
@@ -66,6 +63,6 @@ private:
 
 public:
     explicit TextLayoutCache(size_t maxSize = 1000);
-    CacheValue GetTextLayout(HDC hdc, const std::wstring& text, HFONT font, UINT format, int maxWidth);
+    CacheValue GetTextLayout(HDC hdc, const std::wstring& text);
     void Clear();
 };
