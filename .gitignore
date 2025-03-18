@@ -12,3 +12,5 @@
 /ApiBreakPoint/output/*.zip
 /ApiBreakPoint/ApiBreakPoint/bak
 /ApiBreakPoint/ApiBreakPoint/x64/Debug
+/ApiBreakPoint/output/ApiBreakPoint.dp32
+/ApiBreakPoint/output/ApiBreakPoint.dp64
