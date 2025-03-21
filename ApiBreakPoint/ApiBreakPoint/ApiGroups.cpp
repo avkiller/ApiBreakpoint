@@ -56,6 +56,7 @@ bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& 
 		for (const auto& groupJson : j) {
 			/*ApiGroup group;
 			group.groupName = scl::Utf8ToWide(groupJson["groupName"].get<std::string>());*/
+			size_t entryIndex = 0;
 			ApiGroup group(scl::Utf8ToWide(groupJson["groupName"].get<std::string>()));
 
 			for (const auto& apiJson : groupJson["apiList"]) {
@@ -63,11 +64,19 @@ bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& 
 				std::string apiName = apiJson["apiName"].get<std::string>();
 				std::string description = apiJson.value("description", "");
 
+				const std::wstring wDllName = scl::Utf8ToWide(dllName);
+				const std::wstring wApiName = scl::Utf8ToWide(apiName);
+				const std::wstring wDescription = scl::Utf8ToWide(description);
+
 				group.apiList.emplace_back(
-					scl::Utf8ToWide(dllName),
-					scl::Utf8ToWide(apiName),
-					scl::Utf8ToWide(description)
+					wDllName,
+					wApiName,
+					wDescription
 				);
+
+				const ApiBreakPointInfo& entry = group.apiList.back();
+				group.UpdateLengths(entryIndex, entry);
+				entryIndex++;
 			}
 			//group.UpdateMaxApiNameLength();
 			apiGroups.push_back(std::move(group));

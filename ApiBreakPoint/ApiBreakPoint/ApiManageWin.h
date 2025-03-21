@@ -59,6 +59,7 @@ private:
 
     struct TabContext {
         std::vector<HWND> checkboxes;
+        HWND hContainer = nullptr;
     };
 
     // 窗口消息处理
@@ -70,12 +71,19 @@ private:
         UINT_PTR uIdSubclass, DWORD_PTR dwRefData
     );
     LRESULT HandleMsgTooltip(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,UINT_PTR uIdSubclass, DWORD_PTR dwRefData );
+    
+    static LRESULT CALLBACK ContainerProc(
+        HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+        UINT_PTR uIdSubclass, DWORD_PTR dwRefData
+    );
+    LRESULT HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,UINT_PTR uIdSubclass, DWORD_PTR dwRefData );
 
     // 功能方法
     void Initialize();
     void InitTooltip();
     void CreateTabControl();
     void CreateTabs();
+    void CreateContainerWindows();
     void CreateTabContent(int tabIndex);
     void UpdateTabLayout();
     void UpdateTabWinPos();
@@ -90,10 +98,11 @@ private:
     void HandleDpiChange();
     LRESULT HandleNotify(NMHDR* pHdr);
     void HandlePaint(HWND hwnd);
-    void HandleMouseWheel(WPARAM& wParam, HWND hwnd);
+    void HandleMouseWheel(HWND hwnd, WPARAM& wParam);
     void OnTabChanged();
     void SwitchTabContent(int oldTabIndex, int newTabIndex);
     void DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem);
+    BOOL IsWindowSubclassed(HWND hWnd, SUBCLASSPROC pSubclassProc, UINT_PTR uIdSubclass);
 
     void CleanupBreakpoints();
 
@@ -101,6 +110,8 @@ private:
     HWND m_hMainWnd = nullptr;
     HWND m_hTabCtrl = nullptr;
     HWND m_hTooltip = nullptr;
+    HWND m_hActiveContainer = nullptr;
+
     int m_currentTab = 0;
     int m_curTab_itemsCnt = 0;
     int m_currentScrollPos = 0;

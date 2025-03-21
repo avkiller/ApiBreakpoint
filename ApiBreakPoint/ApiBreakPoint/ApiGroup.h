@@ -37,6 +37,66 @@ struct ApiGroup
 {
     std::wstring groupName;
     std::vector<ApiBreakPointInfo> apiList;
+
+    struct {
+        // DLL名称
+        size_t maxDllNameLen = 0;
+        int maxDllNameIndex = -1;
+        size_t minDllNameLen = 0;
+        int minDllNameIndex = -1;
+
+        // API名称
+        size_t maxApiNameLen = 0;
+        int maxApiNameIndex = -1;
+        size_t minApiNameLen = 0;
+        int minApiNameIndex = -1;
+
+        // 描述
+        size_t maxDescLen = 0;
+        int maxDescIndex = -1;
+        size_t minDescLen = 0;
+        int minDescIndex = -1;
+    } lengths;
+
+    void UpdateLengths(size_t entryIndex, const ApiBreakPointInfo& entry) {
+        // DLL名称
+        if (!entry.dllName.empty())
+        {
+            if (entry.dllName.length() > lengths.maxDllNameLen) {
+                lengths.maxDllNameLen = entry.dllName.length();
+                lengths.maxDllNameIndex = entryIndex;
+             }
+            if (entry.dllName.length() < lengths.minDllNameLen) {
+                lengths.minDllNameLen = entry.dllName.length();
+                lengths.minDllNameIndex = entryIndex;
+            }
+        }
+        // API名称
+        if (!entry.apiName.empty()) {
+            if (entry.apiName.length() > lengths.maxApiNameLen) {
+                lengths.maxApiNameLen = entry.apiName.length();
+                lengths.maxApiNameIndex = entryIndex;
+            }
+            if (entry.apiName.length() < lengths.minApiNameLen) {
+                lengths.minApiNameLen = entry.apiName.length();
+                lengths.minApiNameIndex = entryIndex;
+            }
+        }
+
+        // 描述
+        if (!entry.description.empty()) {
+            if (entry.description.length() > lengths.maxDescLen) {
+                lengths.maxDescLen = entry.description.length();
+                lengths.maxDescIndex = entryIndex;
+            }
+            if (entry.description.length() < lengths.minDescLen) {
+                lengths.minDescLen = entry.description.length();
+                lengths.minDescIndex = entryIndex;
+            }
+        }
+    }
+
+
     //size_t maxApiNameLength = 0;  // 直接存储最大长度
     //size_t maxDllNameLength = 0;  // 直接存储最大长度
     // 新增构造函数：仅接受 groupName
