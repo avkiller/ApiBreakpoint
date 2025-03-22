@@ -60,6 +60,15 @@ private:
     struct TabContext {
         std::vector<HWND> checkboxes;
         HWND hContainer = nullptr;
+        int  LastmainWidth = 0;
+        int  LastmainHeight = 0;
+        int  checkWidth = 0;
+        int  TotalRows = 0;
+        int  maxScrollPage = 0;
+        int  rowsPerPage = 0;
+        int  columns = 0;
+        bool needScroll = FALSE;
+        bool NeedRePos = FALSE;
     };
 
     // 窗口消息处理
@@ -87,8 +96,6 @@ private:
     void CreateTabContent(int tabIndex);
     void UpdateTabLayout();
     void UpdateTabWinPos();
-    void UpdateCheckboxes(int tabIndex);
-    void AdjustLayout();
     void CenterWindow();
     void HandleButtonClick(HWND hButton);
     void ToggleBreakpoint(HWND hButton, ApiBreakPointInfo& apiInfo);
@@ -113,9 +120,6 @@ private:
     HWND m_hActiveContainer = nullptr;
 
     int m_currentTab = 0;
-    int m_curTab_itemsCnt = 0;
-    int m_currentScrollPos = 0;
-    int m_totalContentHeight = 0;
     DpiState m_dpi;
     UINT GetCurrentDPI();
 
@@ -123,17 +127,12 @@ private:
     int m_cachedDPI;
     int m_cachedTabHeight;
     int m_cachedMargin;
-    int m_cachedCheckHeight;
-    int m_cachedcheckWidth;
-    int m_cachedColumns;
     int m_cachedMinCheckWidth;
     int m_cachedMaxCheckWidth;
+    int m_cachedCheckHeight;
+
+
     int m_vScrollPage;          // 垂直滚动偏移量
-    int m_checkItemHeight;     // 单个复选框高度
-    int m_needScroll=FALSE;     // 单个复选框高度
-    int m_rowsPerPage;          // 每页显示行数
-    int m_maxScrollPage;          
-    int m_pageHeight;
 
     struct TruncatedCheckboxInfo {
         RECT rcTruncated{0, 0, 0, 0};       // 截断区域坐标

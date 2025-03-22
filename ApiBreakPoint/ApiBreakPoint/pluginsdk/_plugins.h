@@ -1,4 +1,4 @@
-#ifndef _PLUGINS_H
+﻿#ifndef _PLUGINS_H
 #define _PLUGINS_H
 
 #ifndef __cplusplus

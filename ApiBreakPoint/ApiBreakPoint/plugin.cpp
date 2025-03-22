@@ -33,7 +33,7 @@ bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
 	HRESULT hr = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	if (FAILED(hr))
-		_plugin_logprintf("[+] ApiBreakpoint: SetProcessDpiAwarenessContext failed with error\n");
+		DEBUG_LOG("[+] ApiBreakpoint: SetProcessDpiAwarenessContext failed with error\n");
 	return true; //Return false to cancel loading the plugin.
 }
 

@@ -8,6 +8,11 @@ constexpr auto API_BREAKPOINT_VERSION_MINOR = 9;
 constexpr auto API_BREAKPOINT_VERSION_PATCH = 8;
 constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
+// 定义日志级别（通过编译选项或配置文件）
+#define LOG_LEVEL_DEBUG   0
+#define LOG_LEVEL_RELEASE 1
+#define LOG_LEVEL_NONE    2
+
 #pragma warning(push)
 #pragma warning(disable: 4244)
 #include "pluginsdk/bridgemain.h"
@@ -61,8 +66,25 @@ constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 //#define Cmd(x) DbgCmdExecDirect(x)
 #define Cmd(x) DbgCmdExecDirect((x))
 #define Eval(x) DbgValFromString(x)
-#define dprintf(x, ...) _plugin_logprintf("[" PLUGIN_NAME "] " x, __VA_ARGS__)
-#define dputs(x) _plugin_logprintf("[" PLUGIN_NAME "] %s\n", x)
+
+// 设置当前日志级别（示例中设为RELEASE级别）
+#ifndef CURRENT_LOG_LEVEL
+#define CURRENT_LOG_LEVEL LOG_LEVEL_DEBUG
+#endif
+
+// 分级日志宏
+#if CURRENT_LOG_LEVEL <= LOG_LEVEL_DEBUG
+#define DEBUG_LOG(fmt, ...) _plugin_logprintf("[DEBUG] " fmt, ##__VA_ARGS__)
+#else
+#define DEBUG_LOG(fmt, ...) ((void)0)
+#endif
+
+#if CURRENT_LOG_LEVEL <= LOG_LEVEL_RELEASE
+#define RELEASE_LOG(fmt, ...) _plugin_logprintf("[INFO] " fmt, ##__VA_ARGS__)
+#else
+#define RELEASE_LOG(fmt, ...) ((void)0)
+#endif
+
 #define PLUG_EXPORT extern "C" __declspec(dllexport)
 
 //superglobal variables

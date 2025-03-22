@@ -92,7 +92,7 @@ CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text) {
     // 缓存未命中，计算 RECT 和 SIZE
     CacheValue result{};
     RECT rc = { 0, 0, 0, 0 }; // 初始宽度为 maxWidth，高度自动扩展
-    DrawTextW(hdc, text.c_str(), -1, &rc, DT_CALCRECT);
+    DrawTextW(hdc, text.c_str(), -1, &rc, DT_CALCRECT|DT_EXPANDTABS);
 
     // 转换为物理像素（若需要）
     if (dpiX!= m_dpi) {

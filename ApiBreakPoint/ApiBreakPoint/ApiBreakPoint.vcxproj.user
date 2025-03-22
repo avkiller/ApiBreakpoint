@@ -9,6 +9,7 @@
     <LocalDebuggerCommand>D:\Analyze\DebugTools\x64dbg\x32\x32dbg.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>e:\work\git\re4b\readfile\rf_x86.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>D:\Analyze\DebugTools\x64dbg\x32\x32dbg.exe</LocalDebuggerCommand>
