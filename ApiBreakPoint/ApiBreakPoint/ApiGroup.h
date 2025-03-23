@@ -40,25 +40,25 @@ struct ApiGroup
 
     struct {
         // DLL名称
-        size_t maxDllNameLen = 0;
+        size_t  maxDllNameLen = 0;
         int maxDllNameIndex = -1;
-        size_t minDllNameLen = 0;
+        size_t  minDllNameLen = 0;
         int minDllNameIndex = -1;
 
         // API名称
-        size_t maxApiNameLen = 0;
+        size_t  maxApiNameLen = 0;
         int maxApiNameIndex = -1;
-        size_t minApiNameLen = 0;
+        size_t  minApiNameLen = 0;
         int minApiNameIndex = -1;
 
         // 描述
-        size_t maxDescLen = 0;
+        size_t  maxDescLen = 0;
         int maxDescIndex = -1;
-        size_t minDescLen = 0;
+        size_t  minDescLen = 0;
         int minDescIndex = -1;
     } lengths;
 
-    void UpdateLengths(size_t entryIndex, const ApiBreakPointInfo& entry) {
+    void UpdateLengths(int entryIndex, const ApiBreakPointInfo& entry) {
         // DLL名称
         if (!entry.dllName.empty())
         {

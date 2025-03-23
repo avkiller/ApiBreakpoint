@@ -1,4 +1,4 @@
-#include "OptionsDialog.h"
+﻿#include "OptionsDialog.h"
 #include <CommCtrl.h>
 #include <codecvt>
 #include <locale>
@@ -19,6 +19,7 @@ static void UpdateOptions(HWND hWnd, const scl::Settings *settings)
 	CheckDlgButton(hWnd, IDC_CLOSE_CLEAR_APIBREAKPOINT, opts->closeClearBreakPoint);
 	CheckDlgButton(hWnd, IDC_RELOAD_BREAKPOINT_DLL, opts->dllReloadBreakPoint);
 	SetDlgItemTextW(hWnd, IDC_API_CONFIG_FILE_NAME, opts->apiGroupFileName.c_str());
+	SetDlgItemTextW(hWnd, IDC_FONT_NAME, opts->uiFontName.c_str());
 }
 
 void SaveOptions(HWND hWnd, scl::Settings *settings)
@@ -28,6 +29,7 @@ void SaveOptions(HWND hWnd, scl::Settings *settings)
 	opts->closeClearBreakPoint = (IsDlgButtonChecked(hWnd, IDC_CLOSE_CLEAR_APIBREAKPOINT) == BST_CHECKED);
 	opts->dllReloadBreakPoint = (IsDlgButtonChecked(hWnd, IDC_RELOAD_BREAKPOINT_DLL) == BST_CHECKED);
 	opts->apiGroupFileName = scl::GetDlgItemTextW(hWnd, IDC_API_CONFIG_FILE_NAME);
+	opts->apiGroupFileName = scl::GetDlgItemTextW(hWnd, IDC_FONT_NAME);
 	settings->Save();
 }
 

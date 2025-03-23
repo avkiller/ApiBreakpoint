@@ -988,6 +988,10 @@ void ApiBreakpointManager::CleanupBreakpoints()
 void ApiBreakpointManager::RecreateFonts() {
 	if (m_dpi.font) DeleteObject(m_dpi.font);
 	if (m_dpi.tabfont) DeleteObject(m_dpi.tabfont);
+	std::wstring uiFont = L"Microsoft YaHei UI";
+	if (!g_settings.opts().uiFontName.empty()) {
+		uiFont = g_settings.opts().uiFontName;
+	}
 
 	LOGFONTW lf = {
 		.lfHeight = -MulDiv(12, m_dpi.current, 96),
@@ -995,7 +999,7 @@ void ApiBreakpointManager::RecreateFonts() {
 		.lfCharSet = GB2312_CHARSET,
 		.lfQuality = CLEARTYPE_QUALITY,
 	};
-	wcscpy_s(lf.lfFaceName, L"Microsoft YaHei UI");
+	wcscpy_s(lf.lfFaceName, uiFont.c_str());
 
 	m_dpi.font = CreateFontIndirectW(&lf);
 

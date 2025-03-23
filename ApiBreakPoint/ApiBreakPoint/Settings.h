@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 #include <string>
@@ -16,6 +16,7 @@ namespace scl
             BOOL closeClearBreakPoint;
             BOOL dllReloadBreakPoint;
             std::wstring apiGroupFileName;
+            std::wstring uiFontName;
         };
 
         static const wchar_t kFileName[];

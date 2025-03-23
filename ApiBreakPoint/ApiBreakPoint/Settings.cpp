@@ -1,4 +1,4 @@
-#include "Settings.h"
+﻿#include "Settings.h"
 #include <algorithm>
 
 #include "Util.h"
@@ -62,6 +62,7 @@ void scl::Settings::LoadProfile(const wchar_t *file, const wchar_t *name, Profil
     profile->closeClearBreakPoint = IniLoadNum(file, name, L"closeClearBreakPoint", 1);
     profile->dllReloadBreakPoint = IniLoadNum(file, name, L"dllReloadBreakPoint", 0);
     profile->apiGroupFileName = IniLoadString(file, name, L"apiGroupFileName", L"api_breakpoint_cn.json");
+    profile->uiFontName = IniLoadString(file, name, L"uiFontName", L"Microsoft YaHei UI");
 }
 
 bool scl::Settings::SaveProfile(const wchar_t *file, const wchar_t *name, const Profile *profile)
@@ -71,6 +72,7 @@ bool scl::Settings::SaveProfile(const wchar_t *file, const wchar_t *name, const 
     success &= IniSaveNum(file, name, L"closeClearBreakPoint", profile->closeClearBreakPoint);
     success &= IniSaveNum(file, name, L"dllReloadBreakPoint", profile->dllReloadBreakPoint);
     success &= IniSaveString(file, name, L"apiGroupFileName", profile->apiGroupFileName.c_str());
+    success &= IniSaveString(file, name, L"UIFontName", profile->uiFontName.c_str());
 
     return success;
 }
