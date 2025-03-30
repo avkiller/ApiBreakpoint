@@ -130,6 +130,16 @@ private:
     int m_cachedMinCheckWidth;
     int m_cachedMaxCheckWidth;
     int m_cachedCheckHeight;
+    int m_cachedcheckWidth;
+    int m_cachedColumns;
+    int m_cachedMinCheckWidth;
+    int m_cachedMaxCheckWidth;
+    int m_vScrollPage;          // 垂直滚动偏移量
+    int m_checkItemHeight;     // 单个复选框高度
+    int m_needScroll=FALSE;     // 单个复选框高度
+    int m_rowsPerPage;          // 每页显示行数
+    int m_maxScrollPage;          
+    int m_pageHeight;
 
 
     int m_vScrollPage;          // 垂直滚动偏移量

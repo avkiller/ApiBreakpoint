@@ -100,6 +100,25 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 		InitTooltip();
 		break;
 
+	//case WM_VSCROLL:{
+	//	/*HandleScroll(hwnd, wParam);
+	//	AdjustLayout();*/
+	//	ULONGLONG s_lastScrollTime = 0;
+	//	ULONGLONG now = GetTickCount64();
+	//	if (now - s_lastScrollTime > 100) { // 50ms间隔
+	//		HandleScroll(hwnd, wParam);
+	//		AdjustLayout();
+	//		s_lastScrollTime = now;
+	//	}
+	//	break;
+	//
+	//}
+		
+	case WM_MOUSEWHEEL: {
+		HandleMouseWheel(wParam, hwnd);
+		break;
+	}
+
 	case WM_SIZE:
 		m_vScrollPage = 0;
 		UpdateTabLayout();
@@ -133,6 +152,31 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	case WM_PAINT: {
 		HandlePaint(hwnd);
 		break;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
+		return TRUE;
 	}
 
 	case WM_DESTROY:
@@ -149,7 +193,6 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	}
 	return DefWindowProc(m_hMainWnd, msg, wParam, lParam);
 }
-
 void ApiBreakpointManager::HandlePaint(HWND hwnd)
 {
 	PAINTSTRUCT ps;
@@ -202,6 +245,31 @@ void ApiBreakpointManager::HandleMouseWheel(HWND hwnd, WPARAM& wParam)
 
 }
 
+
+void ApiBreakpointManager::HandlePaint(HWND hwnd)
+{
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hwnd, &ps);
+	RECT rcClient;
+	GetClientRect(hwnd, &rcClient);
+		WS_OVERLAPPEDWINDOW,
+	int cyClient = rcClient.bottom - rcClient.top;
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	HBITMAP hbmMem = CreateCompatibleBitmap(hdc, cxClient, cyClient);
+	SelectObject(hdcMem, hbmMem);
+
+	// 所有绘制操作在内存DC进行
+
+	HBRUSH hBgBrush = CreateSolidBrush(RGB(255, 255, 255));
+	FillRect(hdcMem, &rcClient, hBgBrush);
+	DeleteObject(hBgBrush);
+
+	BitBlt(hdc, 0, 0, cxClient, cyClient, hdcMem, 0, 0, SRCCOPY);
+	DeleteObject(hbmMem);
+	DeleteDC(hdcMem);
+	EndPaint(hwnd, &ps);
+}
+
 void ApiBreakpointManager::ShowMainWindow() {
 	if (m_hMainWnd && IsWindowVisible(m_hMainWnd)) {
 		SetForegroundWindow(m_hMainWnd);
@@ -209,7 +277,7 @@ void ApiBreakpointManager::ShowMainWindow() {
 	}
 
 	m_hMainWnd = CreateWindowW(CLASS_NAME, L"API断点管理器",
-		WS_OVERLAPPEDWINDOW,
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		MulDiv(MAINWINDOW_WIDTH, m_dpi.current, 96),
 		MulDiv(MAINWINDOW_HEIGHT, m_dpi.current, 96),
@@ -262,6 +330,35 @@ void ApiBreakpointManager::HandleButtonClick(HWND hButton) {
 		ApiBreakPointInfo& apiInfo = g_Api_Groups[tabIdx].apiList[itemIdx];
 		ToggleBreakpoint(hButton, apiInfo);
 	}
+}
+
+void ApiBreakpointManager::HandleScroll(HWND hWnd, WPARAM wParam) {
+
+	SCROLLINFO si = { sizeof(SCROLLINFO), SIF_ALL };
+	GetScrollInfo(hWnd, SB_VERT, &si);
+
+	switch (LOWORD(wParam)) {
+	case SB_LINEUP:   si.nPos -= 1; break;
+	case SB_LINEDOWN: si.nPos += 1; break;
+	case SB_PAGEUP:   si.nPos -= si.nPage; break;
+	case SB_PAGEDOWN: si.nPos += si.nPage; break;
+	case SB_THUMBTRACK:
+	case SB_THUMBPOSITION:
+		si.nPos = si.nTrackPos;
+		break;
+	}
+
+	// 确保页数在有效范围内
+	si.nPos = max(si.nMin, min(si.nPos, si.nMax - (int)si.nPage + 1));
+	si.fMask = SIF_POS;
+
+	SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
+	m_vScrollPage = si.nPos;
+	if (m_vScrollPage == 1) {
+		_plugin_logprintf("[+] ApiBreakpoint HandleScroll: do scroll \n", si.nPos);
+	}
+
+	_plugin_logprintf("[+] ApiBreakpoint HandleScroll: si.nPos: %d\n", si.nPos);
 }
 
 void ApiBreakpointManager::HandleScroll(HWND hWnd, WPARAM wParam) {
@@ -356,31 +453,6 @@ LRESULT ApiBreakpointManager::HandleMsgTooltip(HWND hwnd, UINT uMsg,WPARAM wPara
 
 		}
 
-		case WM_MOUSELEAVE: {
-
-			if (m_TruncatedInfos.find(hwnd) == m_TruncatedInfos.end()) {
-				return DefSubclassProc(hwnd, uMsg, wParam, lParam);
-			}
-			// 关闭 Tooltip
-			TOOLINFO ti = { sizeof(TOOLINFO) };
-			ti.hwnd = hwnd;
-			ti.uId = 1;
-			SendMessage(m_hTooltip, TTM_TRACKACTIVATE, FALSE, (LPARAM)&ti);
-			trackingMouseLeave = false;
-			break;
-		}
-
-		case WM_DESTROY: {
-			// 清理资源
-			RemoveWindowSubclass(hwnd, TooltipProc, uIdSubclass);
-			break;
-		}
-	
-	}
-	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
-}
-
-
 LRESULT CALLBACK ApiBreakpointManager::ContainerProc(
 	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
@@ -392,13 +464,13 @@ LRESULT CALLBACK ApiBreakpointManager::ContainerProc(
 	}
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
-
+			ti.hwnd = hwnd;
 LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wParam,
 	LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) 
 {
 	static bool trackingMouseLeave = false;
 	switch (uMsg) {
-
+			break;
 	case WM_PAINT: {
 		DEBUG_LOG("[+] ApiBreakpoint: HandleMsgContainer call WM_PAINT\n");
 		HandlePaint(hwnd);
@@ -411,19 +483,19 @@ LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wP
 			RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE);
 		break;
 	}
-
+			RemoveWindowSubclass(hwnd, TooltipProc, uIdSubclass);
 	case WM_DRAWITEM: {
 		LPDRAWITEMSTRUCT pDrawItem = (LPDRAWITEMSTRUCT)lParam;
 		HWND hButton = pDrawItem->hwndItem;
 		// 检查是否是复选框
 		if (pDrawItem->CtlType != ODT_BUTTON)
 			return DefWindowProc(m_hMainWnd, uMsg, wParam, lParam);
-
+		}
 		DrawCheckbox(
 			reinterpret_cast<HWND>(reinterpret_cast<DRAWITEMSTRUCT*>(lParam)->hwndItem),
 			reinterpret_cast<DRAWITEMSTRUCT*>(lParam));
 		break;
-	}
+
 	
 	case WM_LBUTTONDOWN:
 		SendMessage(m_hMainWnd, uMsg, wParam, lParam);
@@ -443,11 +515,11 @@ LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wP
 		HandleScroll(hwnd, wParam);
 		break;
 
-
+	const int tabHeight = m_cachedTabHeight;
 	case WM_NCDESTROY:
 		RemoveWindowSubclass(hwnd, ContainerProc, uIdSubclass);
 		break;
-
+	const int margin = m_cachedMargin;
 	case WM_DESTROY: {
 		// 清理资源
 		RemoveWindowSubclass(hwnd, ContainerProc, uIdSubclass);
@@ -456,6 +528,31 @@ LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wP
 
 	}
 	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
+}
+	int totalMargin = margin * (CHECKBOX_COLUMNS + 1);
+	int availableWidth = width - totalMargin;
+	int availableHeight = height - tabHeight;
+
+	
+
+	const int stepX = checkWidth + margin;
+	const int stepY = checkHeight + margin;
+	const int startY = tabHeight + margin;
+
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(itemCount));
+	for (size_t i = 0; i < itemCount; i++) {
+		int  col = static_cast<int>(i % columns);
+		int  row = static_cast<int>(i / columns);
+		int x = margin + col * stepX;
+		int y = startY + row * stepY;
+		hdwp = DeferWindowPos(hdwp, checkboxes[i], nullptr,
+			x, y, checkWidth, checkHeight,
+			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+	}
+
+	EndDeferWindowPos(hdwp);
+	RedrawWindow(m_hMainWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_ERASE);
+
 }
 
 void ApiBreakpointManager::CreateTabControl() {
@@ -883,7 +980,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 			};
 		}
 		Polyline(hMemDC, dynamicPoints, 3);
-		SelectObject(hMemDC, hOldPen);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName, 0);
 
 		SetTextColor(hMemDC, RGB(0, 0, 255));
 	}
@@ -898,7 +995,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	std::wstring dllName = apiInfo.dllName;
 	std::wstring apiName = apiInfo.apiName;
 	std::wstring description = apiInfo.description;
-
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName, 0);
 	HFONT hOldFont = (HFONT)SelectObject(hMemDC, font);
 	
 	// 分层次绘制文本
@@ -908,12 +1005,12 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDll.left = rcText.left + textMargin;
 	//  绘制DLL名称（左对齐）
 	if (!dllName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName, font, 0, 0);
 		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
 		rcDll.bottom = rcText.bottom;
 		DrawTextW(hMemDC, dllName.c_str(), -1, &rcDll, DT_LEFT | textFlags);
-	}
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, 0);
 	else {
 		rcDll.right = rcText.left;
 	}
@@ -923,7 +1020,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	RECT rcApi = rcText;
 	rcApi.left = rcDll.right + textMargin;
 	if (!apiName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName, font, 0, 0);
 		rcApi.right = rcApi.left + apiCache.size.cx;
 		rcApi.top = rcText.top;
 		rcApi.bottom = rcText.bottom;
@@ -938,7 +1035,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDesc.left = rcApi.right + textMargin;
 	// 绘制描述信息（右对齐）
 	if (!description.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, 0);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, font, 0, 0);
 		rcDesc.right = rcDesc.left + apiCache.size.cx;
 		if (rcDesc.right < rcText.right) {
 			DrawTextW(hMemDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
