@@ -75,7 +75,7 @@ bool LoadApiGroupsFromJson(const std::wstring& filename, std::vector<ApiGroup>& 
 				);
 
 				const ApiBreakPointInfo& entry = group.apiList.back();
-				group.UpdateLengths(entryIndex, entry);
+				group.UpdateLengths(static_cast<int>(entryIndex), entry);
 				entryIndex++;
 			}
 			//group.UpdateMaxApiNameLength();
