@@ -42,19 +42,19 @@ struct ApiGroup
         // DLL名称
         size_t  maxDllNameLen = 0;
         int maxDllNameIndex = -1;
-        size_t  minDllNameLen = 0;
+        size_t  minDllNameLen = SIZE_MAX;
         int minDllNameIndex = -1;
 
         // API名称
         size_t  maxApiNameLen = 0;
         int maxApiNameIndex = -1;
-        size_t  minApiNameLen = 0;
+        size_t  minApiNameLen = SIZE_MAX;
         int minApiNameIndex = -1;
 
         // 描述
         size_t  maxDescLen = 0;
         int maxDescIndex = -1;
-        size_t  minDescLen = 0;
+        size_t  minDescLen = SIZE_MAX;
         int minDescIndex = -1;
     } lengths;
 
@@ -62,35 +62,38 @@ struct ApiGroup
         // DLL名称
         if (!entry.dllName.empty())
         {
-            if (entry.dllName.length() > lengths.maxDllNameLen) {
-                lengths.maxDllNameLen = entry.dllName.length();
+            size_t len = entry.dllName.length();
+            if (len > lengths.maxDllNameLen) {
+                lengths.maxDllNameLen = len;
                 lengths.maxDllNameIndex = entryIndex;
              }
-            if (entry.dllName.length() < lengths.minDllNameLen) {
-                lengths.minDllNameLen = entry.dllName.length();
+            if (len < lengths.minDllNameLen) {
+                lengths.minDllNameLen = len;
                 lengths.minDllNameIndex = entryIndex;
             }
         }
         // API名称
         if (!entry.apiName.empty()) {
-            if (entry.apiName.length() > lengths.maxApiNameLen) {
-                lengths.maxApiNameLen = entry.apiName.length();
+            size_t len = entry.apiName.length();
+            if (len > lengths.maxApiNameLen) {
+                lengths.maxApiNameLen = len;
                 lengths.maxApiNameIndex = entryIndex;
             }
-            if (entry.apiName.length() < lengths.minApiNameLen) {
-                lengths.minApiNameLen = entry.apiName.length();
+            if (len < lengths.minApiNameLen) {
+                lengths.minApiNameLen = len;
                 lengths.minApiNameIndex = entryIndex;
             }
         }
 
         // 描述
         if (!entry.description.empty()) {
-            if (entry.description.length() > lengths.maxDescLen) {
-                lengths.maxDescLen = entry.description.length();
+            size_t len = entry.description.length();
+            if (len > lengths.maxDescLen) {
+                lengths.maxDescLen = len;
                 lengths.maxDescIndex = entryIndex;
             }
-            if (entry.description.length() < lengths.minDescLen) {
-                lengths.minDescLen = entry.description.length();
+            if (len < lengths.minDescLen) {
+                lengths.minDescLen = len;
                 lengths.minDescIndex = entryIndex;
             }
         }

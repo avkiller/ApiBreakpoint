@@ -2,7 +2,7 @@
 #include "ApiManageWin.h"
 
 namespace {
-	constexpr int MAINWINDOW_WIDTH = 800;
+	constexpr int MAINWINDOW_WIDTH = 900;
 	constexpr int MAINWINDOW_HEIGHT = 600;
 	constexpr int CHECKBOX_COLUMNS = 3;
 	constexpr int TAB_HEIGHT = 32;
@@ -98,13 +98,13 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 	case WM_CREATE:
 		Initialize();
 		InitTooltip();
-		return 0;
+		break;
 
 	case WM_SIZE:
 		m_vScrollPage = 0;
 		UpdateTabLayout();
 		UpdateTabWinPos();
-		return 0;
+		break;
 
 	case WM_DPICHANGED: {
 		m_dpi.current = LOWORD(wParam);
@@ -115,14 +115,14 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 			rect->right - rect->left,
 			rect->bottom - rect->top,
 			SWP_NOZORDER | SWP_NOACTIVATE);
-		return 0;
+		break;
 	}
 
 	case WM_COMMAND:
 		if (HIWORD(wParam) == BN_CLICKED) {
 			HandleButtonClick(reinterpret_cast<HWND>(lParam));
 		}
-		return 0;
+		break;
 
 	case WM_NOTIFY:
 		return HandleNotify(reinterpret_cast<NMHDR*>(lParam));
@@ -132,17 +132,17 @@ LRESULT ApiBreakpointManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	case WM_PAINT: {
 		HandlePaint(hwnd);
-		return 0;
+		break;
 	}
 
 	case WM_DESTROY:
 		Cleanup();
 		//PostQuitMessage(0);
-		return 0;
+		break;
 
 	case WM_CLOSE:
 		DestroyWindow(m_hMainWnd); // 仅销毁当前窗口
-		return 0;
+		break;
 
 	default:
 		break;
@@ -402,14 +402,14 @@ LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wP
 	case WM_PAINT: {
 		DEBUG_LOG("[+] ApiBreakpoint: HandleMsgContainer call WM_PAINT\n");
 		HandlePaint(hwnd);
-		return 0;
+		break;
 	}
 	case WM_SIZE: {
 		DEBUG_LOG("[+] ApiBreakpoint: HandleMsgContainer call WM_SIZE\n");
 		m_vScrollPage = 0;
 		RedrawWindow(hwnd, nullptr, nullptr,
 			RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE);
-		return 0;
+		break;
 	}
 
 	case WM_DRAWITEM: {
@@ -422,26 +422,26 @@ LRESULT ApiBreakpointManager::HandleMsgContainer(HWND hwnd, UINT uMsg, WPARAM wP
 		DrawCheckbox(
 			reinterpret_cast<HWND>(reinterpret_cast<DRAWITEMSTRUCT*>(lParam)->hwndItem),
 			reinterpret_cast<DRAWITEMSTRUCT*>(lParam));
-		return 0;
+		break;
 	}
 	
 	case WM_LBUTTONDOWN:
 		SendMessage(m_hMainWnd, uMsg, wParam, lParam);
-		return 0;
+		break;
 
 	case WM_COMMAND:
 		SendMessage(m_hMainWnd, uMsg, wParam, lParam);
-		return 0;	
+		break;
 	
 	case WM_MOUSEWHEEL:
 		if (!m_tabChecks[m_currentTab].needScroll) return 0;
 		HandleMouseWheel(hwnd, wParam);
-	    return 0;
+		break;
 	
 	case WM_VSCROLL:
 		if (!m_tabChecks[m_currentTab].needScroll) return 0;
 		HandleScroll(hwnd, wParam);
-		return 0;
+		break;
 
 
 	case WM_NCDESTROY:
@@ -569,6 +569,7 @@ void ApiBreakpointManager::UpdateTabLayout() {
 
 	int tabIndex = TabCtrl_GetCurSel(m_hTabCtrl);
 	auto& curtab = m_tabChecks[tabIndex];
+	auto& curgroup = g_Api_Groups[tabIndex];
 	HWND hContainer = curtab.hContainer;
 	if (!hContainer) return;
 	
@@ -616,8 +617,21 @@ void ApiBreakpointManager::UpdateTabLayout() {
 	// 复选框布局
 	const int margin = m_cachedMargin;
 	const int checkHeight = m_cachedCheckHeight;
-	const int minCheckWidth = m_cachedMinCheckWidth;
+	int minCheckWidth = m_cachedMinCheckWidth;
 	const int maxCheckWidth = m_cachedMaxCheckWidth;
+
+	//动态计算最短宽度
+	HDC hdc = GetDC(hContainer);
+	std::wstring apiName, descr, minWidthStr;
+	if (curgroup.lengths.maxApiNameLen > 0) {
+		apiName = curgroup.apiList[curgroup.lengths.maxApiNameIndex].apiName;
+	}
+
+	if (curgroup.lengths.minDescLen > 0) {
+		descr = curgroup.apiList[curgroup.lengths.minDescIndex].description;
+	}
+	minWidthStr = apiName + L"\t" + descr;
+	minCheckWidth = max(m_checkboxCache.CalculateTextWidth(hdc, m_dpi.font, minWidthStr), minCheckWidth);
 
 	// 动态计算列数
 	int columns = (availableWidth - margin) / (minCheckWidth + margin);
@@ -630,6 +644,8 @@ void ApiBreakpointManager::UpdateTabLayout() {
 		columns = min(columns, static_cast<int>(sqrt(itemsCnt)) + 1);
 	}
 	columns = clamp(columns, 1, static_cast<int>(itemsCnt));
+
+	
 
 	// 计算复选框的宽度
 	int checkWidth = (availableWidth - margin * (columns + 1)) / columns;
@@ -892,7 +908,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDll.left = rcText.left + textMargin;
 	//  绘制DLL名称（左对齐）
 	if (!dllName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, dllName, 0);
 		rcDll.right = rcDll.left + apiCache.size.cx;
 		rcDll.top = rcText.top;
 		rcDll.bottom = rcText.bottom;
@@ -907,7 +923,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	RECT rcApi = rcText;
 	rcApi.left = rcDll.right + textMargin;
 	if (!apiName.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, apiName, 0);
 		rcApi.right = rcApi.left + apiCache.size.cx;
 		rcApi.top = rcText.top;
 		rcApi.bottom = rcText.bottom;
@@ -922,7 +938,7 @@ void ApiBreakpointManager::DrawCheckbox(HWND hWnd, LPDRAWITEMSTRUCT pDrawItem)
 	rcDesc.left = rcApi.right + textMargin;
 	// 绘制描述信息（右对齐）
 	if (!description.empty()) {
-		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description);
+		CacheValue apiCache = m_textCache.GetTextLayout(hDC, description, 0);
 		rcDesc.right = rcDesc.left + apiCache.size.cx;
 		if (rcDesc.right < rcText.right) {
 			DrawTextW(hMemDC, description.c_str(), -1, &rcText, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);

@@ -6,6 +6,7 @@
 struct CacheKey {
     std::wstring text;
     int dpiX;
+    int Width;
 
     bool operator==(const CacheKey& other) const;
 };
@@ -44,7 +45,7 @@ struct CheckboxCache {
     void UpdateBrush(COLORREF newColor);
     void UpdateFontMetrics(HDC hdc);
     void Cleanup();
-    int CalculateTextWidth(HDC hdc, const std::wstring& text);
+    int CalculateTextWidth(HDC hdc, HFONT font, const std::wstring& text);
 };
 
 
@@ -63,6 +64,6 @@ private:
 
 public:
     explicit TextLayoutCache(size_t maxSize = 1000);
-    CacheValue GetTextLayout(HDC hdc, const std::wstring& text);
+    CacheValue GetTextLayout(HDC hdc, const std::wstring& text, int Width);
     void Clear();
 };

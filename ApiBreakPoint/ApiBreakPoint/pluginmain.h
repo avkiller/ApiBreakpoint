@@ -3,9 +3,9 @@
 // Plugin information
 constexpr auto ClASS_NAME = L"ApiBreakpoint";
 constexpr auto PLUGIN_NAME = "ApiBreakpoint";
-constexpr auto API_BREAKPOINT_VERSION_MAJOR = 1;
-constexpr auto API_BREAKPOINT_VERSION_MINOR = 9;
-constexpr auto API_BREAKPOINT_VERSION_PATCH = 8;
+constexpr auto API_BREAKPOINT_VERSION_MAJOR = 2;
+constexpr auto API_BREAKPOINT_VERSION_MINOR = 0;
+constexpr auto API_BREAKPOINT_VERSION_PATCH = 0;
 constexpr size_t PLUGIN_NAME_MAX_LEN = 64;
 
 // 定义日志级别（通过编译选项或配置文件）

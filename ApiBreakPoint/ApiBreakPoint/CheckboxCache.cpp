@@ -47,24 +47,31 @@ void CheckboxCache::Cleanup() {
     memset(this, 0, sizeof(*this));
 }
 
-int CheckboxCache::CalculateTextWidth(HDC hdc, const std::wstring& text)
+int CheckboxCache::CalculateTextWidth(HDC hdc, HFONT font, const std::wstring& text)
 {
-    RECT rc = { 0 };
-    DrawTextW(hdc, text.c_str(), -1, &rc, DT_CALCRECT | DT_SINGLELINE);
-    return rc.right - rc.left;
+    HDC hMemDC = CreateCompatibleDC(NULL);
+    HBITMAP hBmp = CreateCompatibleBitmap(hMemDC, 1024, 100);
+    SelectObject(hMemDC, hBmp);
+    SelectObject(hMemDC, font); // 显式选择字体
+
+    // 测量文本
+    RECT rect = { 0, 0, 0, 0 };
+    DrawText(hMemDC, text.c_str(), -1, &rect, DT_CALCRECT);
+    DeleteObject(hBmp);
+    DeleteDC(hMemDC);
+    return rect.right;
 }
 
 
 // CacheKey 的 operator== 实现
 bool CacheKey::operator==(const CacheKey& other) const {
-    return text == other.text &&
-        dpiX == other.dpiX;
+    return text == other.text && dpiX == other.dpiX && Width == other.Width;
 }
 
 // std::hash 特化实现
 namespace std {
     size_t hash<CacheKey>::operator()(const CacheKey& key) const {
-        return hash<wstring>()(key.text) ^hash<int>()(key.dpiX);
+        return hash<wstring>()(key.text) ^hash<int>()(key.dpiX)^hash<int>()(key.Width);
     }
 }
 
@@ -72,13 +79,13 @@ namespace std {
 // TextLayoutCache 成员函数实现
 TextLayoutCache::TextLayoutCache(size_t maxSize) : m_maxSize(maxSize) {}
 
-CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text) {
+CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text, int Width=0) {
 
     auto& manager = ApiBreakpointManager::GetInstance();
     const int m_dpi = manager.GetApiWinDPI();
     const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
    
-    CacheKey key{ text, dpiX};
+    CacheKey key{ text, dpiX, Width};
 
     // LRU 缓存查询
     auto it = g_cache.find(key);
@@ -91,7 +98,7 @@ CacheValue TextLayoutCache::GetTextLayout(HDC hdc, const std::wstring& text) {
 
     // 缓存未命中，计算 RECT 和 SIZE
     CacheValue result{};
-    RECT rc = { 0, 0, 0, 0 }; // 初始宽度为 maxWidth，高度自动扩展
+    RECT rc = { 0, 0, Width, 0 }; // 初始宽度为 maxWidth，高度自动扩展
     DrawTextW(hdc, text.c_str(), -1, &rc, DT_CALCRECT|DT_EXPANDTABS);
 
     // 转换为物理像素（若需要）
